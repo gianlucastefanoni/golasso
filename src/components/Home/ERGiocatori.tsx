@@ -1,15 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import * as XLSX from 'xlsx';
-import { GiocatoreType, TeamData } from '../types/GiocatoreTypes';
-import { addGiocatoriFromData } from '../api/ApiService';
+import { GiocatoreType, TeamData } from '../../types/GiocatoreTypes';
+import { addGiocatoriFromData } from '../../api/ApiService';
 
-export const ExcelReaderGiocatori: React.FC = () => {
+export const ERGiocatori: React.FC = () => {
   const [teamsData, setTeamsData] = useState<TeamData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setError(null);
     setIsLoading(true);
     
     const file = e.target.files?.[0];
@@ -103,14 +101,12 @@ export const ExcelReaderGiocatori: React.FC = () => {
         setTeamsData(result);
       } catch (err) {
         console.error('Error processing Excel file:', err);
-        setError('Error processing the Excel file. Please check the format.');
       } finally {
         setIsLoading(false);
       }
     };
     
     reader.onerror = () => {
-      setError('Error reading the file');
       setIsLoading(false);
     };
     
@@ -124,19 +120,17 @@ export const ExcelReaderGiocatori: React.FC = () => {
     }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2>Football Statistics Excel Reader</h2>
+    <div className="flex flex-col gap-">
+      <h2>Carica giocatori</h2>
       
-      <div className="border-blue-100">
+      <div>
         <input 
-        className='text-white bg-blue-700 hover:bg-blue-800 cursor-pointer p-2 rounded-lg'
+        className='text-white bg-emerald-500 hover:bg-emerald-600 cursor-pointer p-2 rounded-lg'
           type="file" 
           accept=".xlsx, .xls" 
           onChange={handleFileUpload} 
           disabled={isLoading}
         />
-        {isLoading && <p>Loading and processing file...</p>}
-        {error && <p className="error">{error}</p>}
       </div>
       
       {teamsData.length > 0 && (
@@ -147,7 +141,7 @@ export const ExcelReaderGiocatori: React.FC = () => {
             <p>Total players: {teamsData.reduce((sum, team) => sum + team.giocatori.length, 0)}</p>
           </div>
           
-          <button className='text-white bg-blue-700 hover:bg-blue-800 cursor-pointer p-2 rounded-lg' onClick={() => aggiungiGiocatoriDB()}>
+          <button className='text-white bg-emerald-500 hover:bg-emerald-600 cursor-pointer p-2 rounded-lg' onClick={() => aggiungiGiocatoriDB()}>
             Aggiungi giocatori a db
           </button>
         </div>
