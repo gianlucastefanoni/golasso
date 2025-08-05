@@ -1,4 +1,4 @@
-import { ERStatistiche } from "../components/Home/ERStatistiche";
+import { ERStatistiche } from "../components/StatisticheERPage/ERStatistiche";
 
 export const StatisticheERPage = () => {
   return (

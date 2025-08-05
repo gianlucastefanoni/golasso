@@ -4,13 +4,18 @@ import { getAllGiocatori } from "../api/ApiService";
 import { Link } from "react-router-dom";
 import { GiocatoreCard } from "../components/Home/cards/GiocatoreCard";
 import './Home.css'
+import { FiltriSidebar } from "../components/Home/FiltriSidebar";
+import { IntestazioniGiocatori } from "../components/Home/IntestazioniGiocatori";
 
 type SortField = keyof StatisticheGiocatore;
 type SortDirection = "asc" | "desc";
 
 export const Home = () => {
   const [giocatori, setGiocatori] = useState<StatisticheGiocatore[]>([]);
-  const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection } | null>({
+    field: "Fm",
+    direction: "desc",
+  });
 
   // FILTRI
   const [search, setSearch] = useState("");
@@ -74,10 +79,7 @@ export const Home = () => {
       setSortConfig({ field, direction: "asc" });
     }
   };
-
-  const getArrow = (field: SortField) =>
-    sortConfig?.field === field ? (sortConfig.direction === "asc" ? "▲" : "▼") : null;
-
+  
   return (
     <div className="w-full bg-gray-900 text-white min-h-screen h-[100dvh] py-4">
       <div className="w-4/6 mx-auto flex flex-col gap-2 h-full">
@@ -92,78 +94,19 @@ export const Home = () => {
         </div>
 
         <div className="flex gap-4 flex-1 overflow-hidden">
-          {/* FILTRI */}
-          <aside className="w-64 flex flex-col gap-4 overflow-auto">
-            <input
-              type="text"
-              placeholder="Cerca per nome..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-gray-800 text-white rounded px-3 py-2"
-            />
-            <div className="flex flex-wrap gap-2 justify-between text-xs">
-              {["TUTTI", "P", "D", "C", "A"].map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRole(r as any)}
-                  className={`flex-1 py-1 rounded cursor-pointer hover:bg-emerald-500 ${role === r ? "bg-emerald-500" : "bg-emerald-800"}`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-            <div>
-              <label className="text-sm">PV ≥ {minPv}</label>
-              <input
-                type="range"
-                min={0}
-                max={38}
-                value={minPv}
-                onChange={(e) => setMinPv(Number(e.target.value))}
-                className="w-full accent-emerald-500"
-              />
-            </div>
-            <div>
-              <label className="text-sm">MV ≥ {minMv}</label>
-              <input
-                type="range"
-                min={2}
-                max={10}
-                step={0.1}
-                value={minMv}
-                onChange={(e) => setMinMv(Number(e.target.value))}
-                className="w-full accent-emerald-500"
-              />
-            </div>
-            <div>
-              <label className="text-sm">FM ≥ {minFm}</label>
-              <input
-                type="range"
-                min={2}
-                max={10}
-                step={0.1}
-                value={minFm}
-                onChange={(e) => setMinFm(Number(e.target.value))}
-                className="w-full accent-emerald-500"
-              />
-            </div>
-            <button onClick={resetFilters} className="bg-emerald-600 rounded py-1 cursor-pointer hover:bg-emerald-500">
-              Reset filtri
-            </button>
-          </aside>
-
+          <FiltriSidebar
+            search={search} setSearch={setSearch}
+            minPv={minPv} setMinPv={setMinPv}
+            minMv={minMv} setMinMv={setMinMv}
+            minFm={minFm} setMinFm={setMinFm}
+            role={role} setRole={setRole}
+            onReset={resetFilters}
+          />
           {/* LISTA */}
           <div className="flex-1 flex flex-col overflow-hidden">
             {/* intestazioni fisse */}
-            <div className="flex items-center px-4 py-3 gap-3 text-gray-400 uppercase text-xs font-semibold select-none border-b border-gray-700 flex-shrink-0">
-              <div className="w-10 cursor-pointer" onClick={() => onHeaderClick("Cod")}>Cod {getArrow("Cod")}</div>
-              <div className="w-6"></div>
-              <div className="flex-1 cursor-pointer" onClick={() => onHeaderClick("Nome")}>Nome {getArrow("Nome")}</div>
-              <div className="w-28 text-right cursor-pointer" onClick={() => onHeaderClick("Squadra")}>Squadra {getArrow("Squadra")}</div>
-              <div className="w-12 text-right cursor-pointer" onClick={() => onHeaderClick("Pv")}>PV {getArrow("Pv")}</div>
-              <div className="w-12 text-right cursor-pointer" onClick={() => onHeaderClick("Mv")}>MV {getArrow("Mv")}</div>
-              <div className="w-12 text-right cursor-pointer" onClick={() => onHeaderClick("Fm")}>FM {getArrow("Fm")}</div>
-            </div>
+
+            <IntestazioniGiocatori sortConfig={sortConfig} onSortClick={onHeaderClick} />
 
             {/* scroller */}
             <section className="flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar">
