@@ -3,7 +3,7 @@
   }
   
   .custom-scrollbar::-webkit-scrollbar-track {
-    background-color: #1f2937; /* bg-gray-800 */
+    background-color: transparent; /* bg-gray-800 */
   }
   
   .custom-scrollbar::-webkit-scrollbar-thumb {
