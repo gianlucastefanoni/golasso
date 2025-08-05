@@ -1,29 +1,24 @@
-export type GiocatoreType = {
-  id: string
-  cod: number
-  ruolo: Ruolo
-  nome: string
-  squadra: string
-}
-
-export type TeamData = {
-  squadra: string;
-  giocatori: GiocatoreType[];
-}
-
-export type Ruolo = 'P' | 'D' | 'C' | 'A' | 'ALL'
+export type Ruolo = 'P' | 'D' | 'C' | 'A'
+export type RuoloMantra = 'Por' | 'Dd' | 'Dc' | 'Ds' | 'B' | 'E' | 'M' | 'C' | 'W' | 'T' | 'A' | 'Pc'
 
 export type StatisticheGiocatore = {
-  cod: number
-  voto: number
-  gf: number
-  gs: number
-  rp: number
-  rs: number
-  rf: number
-  au: number
-  amm: number
-  esp: number
-  ass: number
-  giornata: number
+  id?: string
+  Cod: number
+  R: string
+  Rm: string[]
+  Nome: string
+  Squadra: string
+  Pv: number
+  Mv: number
+  Fm: number
+  Gf: number
+  Gs: number
+  Rp: number
+  Rc: number
+  Rf: number
+  Rs: number
+  Ass: number
+  Amm: number
+  Esp: number
+  Au: number
 }
