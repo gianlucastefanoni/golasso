@@ -1,7 +1,7 @@
 import { db } from '../firebase/firebaseconfig';
 
 // Importa le funzioni necessarie da firestore
-import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { StatisticheGiocatore } from '../types/GiocatoreTypes';
 
 export async function getAllGiocatori(): Promise<StatisticheGiocatore[]> {
