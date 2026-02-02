@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { auth } from "./firebase/firebaseconfig";
 import { Login } from "./pages/Login";
 import UserRoleManager from "./pages/UserRoleManager";
+import { useUserStore } from "./store/useUserStore";
 
 function ProtectedRoute({ children }) {
   const [user, setUser] = useState(undefined);
@@ -22,6 +23,10 @@ function ProtectedRoute({ children }) {
 
 
 export default function App() {
+  useEffect(() => {
+    useUserStore.getState().initialize();
+  }, []);
+  
   return (
     <HashRouter>
       <Routes>

@@ -1,86 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
-import { getUserProfile, updateUserRole, getAllUserProfiles } from '../firebase/firestoreUtils';
+import { updateUserRole, getAllUserProfiles } from '../firebase/firestoreUtils';
 import { UserProfile, FirestoreUser } from '../types/UserTypes';
-import { app } from '../firebase/firebaseconfig';
 import { Link } from 'react-router-dom';
-
-const auth = getAuth(app);
+import { useUserStore } from '../store/useUserStore'; // Importa lo store
+import { Loader2, ShieldCheck, Users } from 'lucide-react';
 
 const UserRoleManager: React.FC = () => {
-  const [currentUserProfile, setCurrentUserProfile] = useState<FirestoreUser | null>(null);
+  // Prendiamo i dati e lo stato di caricamento dallo store
+  const { profile: currentUserProfile, isAdmin, loading: authLoading } = useUserStore();
+  
   const [allUsers, setAllUsers] = useState<FirestoreUser[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Funzione per caricare tutti i profili (solo se admin)
   const fetchAllUserProfiles = async () => {
+    setLoadingUsers(true);
     try {
       const fetchedUsers = await getAllUserProfiles();
       setAllUsers(fetchedUsers);
     } catch (err: any) {
-      console.error("Errore nel recuperare i profili:", err);
-      setError(`Errore: ${err.message}`);
+      setError(`Errore nel caricamento utenti: ${err.message}`);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
-      setLoading(true);
-      setError(null);
-      if (user) {
-        try {
-          const profile = await getUserProfile(user.uid);
-          setCurrentUserProfile(profile);
-          if (profile?.idProfilo === UserProfile.Admin) {
-            await fetchAllUserProfiles();
-          }
-        } catch (err: any) {
-          setError("Errore durante il caricamento del profilo.");
-        }
-      } else {
-        setCurrentUserProfile(null);
-        setAllUsers([]);
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+    // Se lo store ha finito di caricare e l'utente è admin, carica la lista
+    if (!authLoading && isAdmin) {
+      fetchAllUserProfiles();
+    }
+  }, [authLoading, isAdmin]);
 
   const handleChangeRole = async (targetUid: string, newRole: UserProfile) => {
     setError(null);
-    if (!auth.currentUser || currentUserProfile?.idProfilo !== UserProfile.Admin) {
+    if (!isAdmin) {
       setError("Permessi insufficienti.");
       return;
     }
     
-    if (targetUid === auth.currentUser.uid && newRole !== UserProfile.Admin) {
+    if (currentUserProfile?.ID === targetUid && newRole !== UserProfile.Admin) {
       if (!window.confirm("Attenzione: stai per declassare te stesso. Continuare?")) return;
     }
 
     try {
       await updateUserRole(targetUid, newRole);
+      // Aggiorniamo la lista locale
       setAllUsers(prev => prev.map(u => (u.ID === targetUid ? { ...u, idProfilo: newRole } : u)));
-      if (targetUid === auth.currentUser.uid) {
-        setCurrentUserProfile(prev => prev ? { ...prev, idProfilo: newRole } : null);
-      }
+      
+      // Nota: lo store si aggiornerà automaticamente al prossimo refresh o 
+      // puoi chiamare una funzione dello store per aggiornare il profilo locale se necessario.
     } catch (err: any) {
       setError(err.message || "Errore durante il cambio ruolo.");
     }
   };
 
-  if (loading) {
+  // 1. Caricamento Iniziale (Auth + Profilo Personale)
+  if (authLoading) {
     return (
-      <div className="w-full h-screen bg-gray-900 flex items-center justify-center">
-        <p className="text-emerald-500 animate-pulse text-xl">Caricamento dati...</p>
+      <div className="w-full h-screen bg-gray-900 flex flex-col items-center justify-center">
+        <Loader2 className="w-12 h-12 text-emerald-500 animate-spin mb-4" />
+        <p className="text-emerald-500 font-bold tracking-widest uppercase text-xs">Verifica credenziali...</p>
       </div>
     );
   }
 
+  // 2. Non Loggato
   if (!currentUserProfile) {
     return (
-      <div className="w-full h-screen bg-gray-900 flex items-center justify-center">
-        <Link to="/login" className="bg-emerald-600 px-6 py-2 rounded text-white hover:bg-emerald-500 transition-colors">
-          Effettua il Login
+      <div className="w-full h-screen bg-gray-900 flex flex-col items-center justify-center p-4">
+        <p className="text-gray-500 mb-6 font-medium">Sessione non trovata o scaduta.</p>
+        <Link to="/login" className="bg-emerald-600 px-8 py-3 rounded-2xl text-white font-bold hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20">
+          Torna al Login
         </Link>
       </div>
     );
@@ -88,74 +80,89 @@ const UserRoleManager: React.FC = () => {
 
   return (
     <div className="w-full bg-gray-900 text-white min-h-screen p-4 md:p-8">
-      <div className="max-w-4xl mx-auto flex flex-col gap-6">
+      <div className="max-w-5xl mx-auto flex flex-col gap-8">
         
-        {/* Header & Back Button */}
-        <div className="flex justify-between items-center border-b border-gray-700 pb-4">
-          <h2 className="text-2xl font-bold text-emerald-500">Gestione Account</h2>
-          <Link to="/" className="text-sm bg-gray-800 px-3 py-1 rounded hover:bg-gray-700">
-            Torna alla Home
+        {/* Header */}
+        <div className="flex justify-between items-end border-b border-gray-800 pb-6">
+          <div>
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter">Gestione <span className="text-emerald-500">Account</span></h2>
+            <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-1">Pannello Controllo Staff</p>
+          </div>
+          <Link to="/" className="text-xs bg-gray-800 border border-gray-700 px-4 py-2 rounded-xl hover:bg-gray-700 font-bold transition-all">
+            Home
           </Link>
         </div>
 
         {/* Profilo Corrente Card */}
-        <section className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-emerald-600">
-          <h3 className="text-lg font-semibold mb-2">Il mio Profilo</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
-            <p><span className="text-gray-500 uppercase text-xs font-bold block">ID Utente</span> {currentUserProfile.ID}</p>
-            <p>
-                <span className="text-gray-500 uppercase text-xs font-bold block">Ruolo Attuale</span> 
-                <span className="bg-emerald-900/50 text-emerald-400 px-2 py-1 rounded text-sm">
-                    {UserProfile[currentUserProfile.idProfilo]}
-                </span>
-            </p>
+        <section className="bg-gray-800/30 p-6 rounded-3xl border border-gray-800 backdrop-blur-sm flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/20">
+                <ShieldCheck className="text-emerald-500 w-6 h-6" />
+            </div>
+            <div>
+                <p className="text-gray-500 uppercase text-[10px] font-black tracking-widest">Il mio Account</p>
+                <p className="text-sm font-mono text-gray-300">{currentUserProfile.ID}</p>
+            </div>
+          </div>
+          <div className="text-right">
+             <span className="bg-emerald-500 text-gray-900 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider">
+                {UserProfile[currentUserProfile.idProfilo]}
+            </span>
           </div>
         </section>
 
         {error && (
-          <div className="bg-red-900/20 border border-red-500 text-red-400 p-3 rounded-md text-sm">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             {error}
           </div>
         )}
 
-        {/* Pannello Admin */}
-        {currentUserProfile.idProfilo === UserProfile.Admin && (
-          <section className="flex flex-col gap-4">
-            <div className="flex flex-col">
-                <h3 className="text-xl font-semibold text-emerald-500">Gestione Ruoli</h3>
-                <p className="text-gray-400 text-sm">Modifica i permessi degli utenti registrati nel sistema.</p>
+        {/* Pannello Admin - Lista Utenti */}
+        {isAdmin && (
+          <section className="flex flex-col gap-6 mt-4">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-emerald-500" />
+                    <h3 className="text-xl font-black italic uppercase tracking-tighter">Utenti <span className="text-emerald-500 pr-1">Registrati</span></h3>
+                </div>
+                {loadingUsers && <Loader2 className="w-4 h-4 text-emerald-500 animate-spin" />}
             </div>
 
-            {allUsers.length === 0 ? (
-              <div className="bg-gray-800 p-8 rounded-lg text-center text-gray-500">
-                Nessun altro utente trovato o permessi insufficienti.
+            {allUsers.length === 0 && !loadingUsers ? (
+              <div className="bg-gray-800/20 p-12 rounded-3xl border border-gray-800 border-dashed text-center text-gray-600 italic">
+                Nessun utente trovato nel database.
               </div>
             ) : (
-              <div className="overflow-hidden rounded-lg border border-gray-700">
-                <table className="w-full text-left border-collapse bg-gray-800/50">
-                  <thead className="bg-gray-800 text-gray-400 uppercase text-xs">
+              <div className="overflow-hidden rounded-3xl border border-gray-800 bg-gray-800/10">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-gray-800/50 text-gray-500 uppercase text-[10px] font-black tracking-widest border-b border-gray-800">
                     <tr>
-                      <th className="px-4 py-3">UID / Utente</th>
-                      <th className="px-4 py-3">Stato Ruolo</th>
-                      <th className="px-4 py-3 text-right">Azione</th>
+                      <th className="px-6 py-4">ID Utente</th>
+                      <th className="px-6 py-4">Grado Profilo</th>
+                      <th className="px-6 py-4 text-right">Modifica Permessi</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-700">
+                  <tbody className="divide-y divide-gray-800">
                     {allUsers.map(user => (
-                      <tr key={user.ID} className="hover:bg-gray-700/30 transition-colors">
-                        <td className="px-4 py-4 font-mono text-xs text-gray-400">{user.ID}</td>
-                        <td className="px-4 py-4">
-                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
-                            user.idProfilo === UserProfile.Admin ? 'bg-purple-900/40 text-purple-400' : 'bg-blue-900/40 text-blue-400'
+                      <tr key={user.ID} className="hover:bg-white/5 transition-colors group">
+                        <td className="px-6 py-4 font-mono text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors">{user.ID}</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                            user.idProfilo === UserProfile.Admin 
+                                ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' 
+                                : user.idProfilo === UserProfile.Scrittore
+                                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
                           }`}>
                             {UserProfile[user.idProfilo]}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-right">
+                        <td className="px-6 py-4 text-right">
                           <select
                             value={user.idProfilo}
                             onChange={(e) => handleChangeRole(user.ID, parseInt(e.target.value) as UserProfile)}
-                            className="bg-gray-900 border border-gray-600 text-sm rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                            className="bg-gray-900 border border-gray-700 text-[10px] font-bold uppercase rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none cursor-pointer hover:border-emerald-500 transition-all shadow-inner"
                           >
                             {Object.values(UserProfile)
                               .filter(value => typeof value === 'number')

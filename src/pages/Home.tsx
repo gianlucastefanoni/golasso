@@ -8,11 +8,13 @@ import { IntestazioniGiocatori } from "../components/Home/IntestazioniGiocatori"
 import { Header } from "../components/Header";
 import { Filter, Settings2, Loader2 } from "lucide-react"; // Loader2 è perfetto per la girella
 import './Home.css'
+import { useUserStore } from "../store/useUserStore";
 
 type SortField = keyof StatisticheGiocatore;
 type SortDirection = "asc" | "desc";
 
 export const Home = () => {
+  const { isEditor } = useUserStore();
   const [giocatori, setGiocatori] = useState<StatisticheGiocatore[]>([]);
   const [loading, setLoading] = useState(true); // Stato di caricamento iniziale
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
@@ -90,13 +92,13 @@ export const Home = () => {
             </p>
           </div>
           
-          <Link
+          {isEditor && <Link
             to="/statistiche-er"
             className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-xl transition-all font-bold text-sm"
           >
             <Settings2 className="w-4 h-4" />
             Gestione Giocatori
-          </Link>
+          </Link>}
         </div>
 
         {/* CONTENT AREA */}

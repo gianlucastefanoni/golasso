@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { LogoutButton } from './LogoutButton';
 import logo from '../assets/logo.svg';
+import { useUserStore } from '../store/useUserStore';
 
 export const Header = () => {
+  const { isAdmin } = useUserStore();
   return (
     <header className="w-full bg-gray-900 border-b border-gray-800 sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -19,8 +21,8 @@ export const Header = () => {
         {/* LATO DESTRO: Navigazione e Logout */}
         <div className="flex items-center gap-6">
           <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
-             <Link to="/statistiche-er" className="hover:text-emerald-400 transition-colors">Statistiche</Link>
-             <Link to="/gestione-ruoli" className="hover:text-emerald-400 transition-colors">Utenti</Link>
+             <Link to="/home" className="hover:text-emerald-400 transition-colors">Giocatori</Link>
+             {isAdmin && <Link to="/gestione-ruoli" className="hover:text-emerald-400 transition-colors">Utenti</Link>}
           </nav>
 
           <div className="h-6 w-[1px] bg-gray-700 hidden md:block"></div>
