@@ -1,9 +1,10 @@
 import { useState, useMemo } from "react";
 import { useGiocatoriStore } from "../store/useGiocatoriStore";
 import { Header } from "../components/Header";
-import { Wallet, Info, AlertTriangle } from "lucide-react";
+import { Wallet, Info, AlertTriangle, TrendingUp } from "lucide-react";
 import { TEAM_NAMES } from "../types/GiocatoreTypes";
 import { getFmColor, getMvColor, getPvColor } from "../components/FantaSquadra/FantaSquadraUtils";
+import { calculateScouting } from "../components/FantaSquadra/ScoutingUtils";
 
 export const FantaSquadraDetail = () => {
     const { giocatori } = useGiocatoriStore();
@@ -31,6 +32,11 @@ export const FantaSquadraDetail = () => {
             fuoriLista: teamPlayers.filter((g) => g.Fl).length,
         };
     }, [teamPlayers]);
+
+    const scouting = useMemo(() => {
+        // Passiamo tutti i giocatori, i tuoi e la lista dei nomi squadre per il calcolo budget
+        return calculateScouting(giocatori, teamPlayers, TEAM_NAMES);
+    }, [giocatori, teamPlayers]);
 
     const ruoli = [
         { key: "P", label: "Portieri", color: "text-orange-400" },
@@ -145,7 +151,51 @@ export const FantaSquadraDetail = () => {
                         );
                     })}
                 </div>
+                {/*SCUOTING*/}
+                <section className="mt-12 bg-gray-900/60 rounded-3xl border border-emerald-500/20 p-8 backdrop-blur-md">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="p-2 bg-emerald-500/20 rounded-lg">
+                            <TrendingUp className="text-emerald-500 w-6 h-6" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black uppercase italic tracking-tighter">
+                                Analisi <span className="text-emerald-500">Mercato</span>
+                            </h2>
+                            <p className="text-xs text-gray-500 font-bold uppercase tracking-widest">Sostituzioni consigliate per ruolo</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* COLONNA SINISTRA: DA TAGLIARE */}
+                        <div className="space-y-4">
+                            {scouting.daTagliare.map(p => (
+                                <div key={p.Cod} className={`p-3 rounded-xl border ${p.Fl ? 'bg-red-500/20 border-red-500' : 'bg-gray-800/40 border-gray-700'}`}>
+                                    <div className="flex justify-between items-center">
+                                        <p className="font-bold">{p.Nome}</p>
+                                        {p.Fl && <span className="text-[8px] bg-red-600 px-2 py-1 rounded-md animate-pulse">NON IN LISTA</span>}
+                                    </div>
+                                    <p className="text-[10px] text-gray-500">Recuperi: {p.Costo} cr.</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* COLONNA DESTRA: SUGGERIMENTI CON PREZZO */}
+                        <div className="space-y-4">
+                            {scouting.suggerimenti.slice(0, 10).map(s => (
+                                <div key={s.Cod} className="p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-xl flex justify-between items-center">
+                                    <div>
+                                        <p className="font-black text-emerald-400">{s.Nome} <span className="text-[9px] text-gray-500">({s.Squadra})</span></p>
+                                        <p className="text-[10px] font-bold">Stima asta: <span className="text-white">{s.stimaPrezzo} cr.</span></p>
+                                    </div>
+                                    <div className={`text-[9px] font-black px-2 py-1 rounded ${s.convenienza === 'ALTA' ? 'bg-emerald-500 text-black' : 'bg-yellow-500 text-black'}`}>
+                                        {s.convenienza}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
             </main>
-        </div>
+        </div >
     );
 };
