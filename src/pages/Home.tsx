@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
 import { StatisticheGiocatore } from "../types/GiocatoreTypes";
-import { getAllGiocatori } from "../api/ApiService";
 import { Link } from "react-router-dom";
 import { GiocatoreCard } from "../components/Home/cards/GiocatoreCard";
 import { FiltriSidebar } from "../components/Home/FiltriSidebar";
 import { IntestazioniGiocatori } from "../components/Home/IntestazioniGiocatori";
 import { Header } from "../components/Header";
-import { Filter, Settings2, Loader2 } from "lucide-react"; // Loader2 è perfetto per la girella
+import { Filter, Settings2, Loader2, RefreshCw } from "lucide-react"; // Loader2 è perfetto per la girella
 import './Home.css'
 import { useUserStore } from "../store/useUserStore";
+import { useGiocatoriStore } from "../store/useGiocatoriStore";
 
 type SortField = keyof StatisticheGiocatore;
 type SortDirection = "asc" | "desc";
 
 export const Home = () => {
   const { isEditor } = useUserStore();
-  const [giocatori, setGiocatori] = useState<StatisticheGiocatore[]>([]);
-  const [loading, setLoading] = useState(true); // Stato di caricamento iniziale
+  const { giocatori, loading, fetchGiocatori, lastFetched } = useGiocatoriStore();
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: "Fm",
     direction: "desc",
@@ -30,20 +29,16 @@ export const Home = () => {
   const [minMv, setMinMv] = useState(2);
   const [minFm, setMinFm] = useState(2);
   const [role, setRole] = useState<"TUTTI" | "P" | "D" | "C" | "A">("TUTTI");
+  const timeAgo = lastFetched
+    ? `Aggiornato il ${new Date(lastFetched).toLocaleDateString([], { day: '2-digit', month: '2-digit' })} alle ${new Date(lastFetched).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : "Dati non sincronizzati";
 
+  const handleRefresh = () => {
+    // Chiamiamo il fetch con 'true' per ignorare la cache e scaricare tutto
+    fetchGiocatori(true);
+  };
   useEffect(() => {
-    const fetchGiocatori = async () => {
-      try {
-        setLoading(true);
-        const data = await getAllGiocatori();
-        setGiocatori(data);
-      } catch (error) {
-        console.error("Errore nel recupero giocatori:", error);
-      } finally {
-        setLoading(false); // Smette di caricare sia in caso di successo che di errore
-      }
-    };
-    fetchGiocatori();
+    fetchGiocatori(); // Fa la query solo se necessario
   }, []);
 
   const resetFilters = () => {
@@ -80,7 +75,7 @@ export const Home = () => {
       <Header />
 
       <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-4 py-6 overflow-hidden">
-        
+
         {/* ACTION BAR */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
           <div>
@@ -91,7 +86,21 @@ export const Home = () => {
               {loading ? "Caricamento in corso..." : `Trovati ${filteredGiocatori.length} giocatori`}
             </p>
           </div>
-          
+
+          <div className="flex flex-row gap-x-2 content-center">
+            <p className="text-gray-500 text-[10px] uppercase font-bold tracking-widest flex items-center">
+              {timeAgo}
+            </p>
+
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              title="Aggiorna dati dal server"
+              className={`p-2 rounded-xl border border-gray-700 bg-gray-800/50 hover:bg-gray-700 transition-all ${loading ? "opacity-50 cursor-not-allowed" : "active:scale-90"
+                }`}
+            >
+              <RefreshCw className={`w-4 h-4 text-emerald-500 ${loading ? "animate-spin" : ""}`} />
+            </button></div>
           {isEditor && <Link
             to="/statistiche-er"
             className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-xl transition-all font-bold text-sm"
@@ -117,7 +126,7 @@ export const Home = () => {
 
           <div className="flex-1 flex flex-col bg-gray-800/20 rounded-2xl border border-gray-800 overflow-hidden relative">
             <IntestazioniGiocatori sortConfig={sortConfig} onSortClick={onHeaderClick} />
-            
+
             <section className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-3 custom-scrollbar">
               {loading ? (
                 // LA GIRELLA
