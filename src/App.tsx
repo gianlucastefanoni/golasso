@@ -11,6 +11,7 @@ import UserRoleManager from "./pages/UserRoleManager";
 
 // Tipi
 import { UserProfile } from "./types/UserTypes";
+import { FantaSquadraDetail } from "./pages/FantaSquadraDetail";
 
 /**
  * Componente per proteggere le rotte in base a login e ruoli
@@ -57,6 +58,11 @@ export default function App() {
         <Route path="/home" element={
           <ProtectedRoute>
             <Home />
+          </ProtectedRoute>
+        } />
+        <Route path="/fantasquadra" element={
+          <ProtectedRoute>
+            <FantaSquadraDetail />
           </ProtectedRoute>
         } />
         

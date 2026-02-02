@@ -1,4 +1,5 @@
-import { Search, RotateCcw, Filter } from "lucide-react"; // Se non hai lucide-react, puoi usare SVG o ignorare le icone
+import { TEAM_NAMES } from "../../types/GiocatoreTypes";
+import { Search, RotateCcw, Users } from "lucide-react";
 
 type RoleType = "TUTTI" | "P" | "D" | "C" | "A";
 
@@ -13,6 +14,10 @@ interface Props {
   setMinFm: (v: number) => void;
   role: RoleType;
   setRole: (r: RoleType) => void;
+  selectedTeam: string;
+  setSelectedTeam: (v: string) => void;
+  showFuoriLista: boolean;
+  setShowFuoriLista: (v: boolean) => void;
   onReset: () => void;
 }
 
@@ -22,9 +27,11 @@ export const FiltriSidebar = ({
   minMv, setMinMv,
   minFm, setMinFm,
   role, setRole,
+  selectedTeam, setSelectedTeam,
+  showFuoriLista, setShowFuoriLista,
   onReset
 }: Props) => {
-  
+
   const roleLabels: Record<RoleType, string> = {
     TUTTI: "Tutti",
     P: "Por",
@@ -35,7 +42,7 @@ export const FiltriSidebar = ({
 
   return (
     <aside className="w-64 flex flex-col gap-6 bg-gray-800/40 p-4 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-auto custom-scrollbar h-fit">
-      
+
       {/* SEZIONE: RICERCA */}
       <div className="flex flex-col gap-2">
         <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold ml-1">Cerca Giocatore</label>
@@ -50,6 +57,46 @@ export const FiltriSidebar = ({
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
         </div>
       </div>
+      {/* SEZIONE: FUORI LISTA */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex flex-col">
+          <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Fuori Lista</label>
+          <span className="text-[9px] text-gray-600 font-medium">Includi giocatori rimossi</span>
+        </div>
+
+        <button
+          onClick={() => setShowFuoriLista(!showFuoriLista)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors outline-none ${showFuoriLista ? "bg-emerald-600" : "bg-gray-700"
+            }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showFuoriLista ? "translate-x-6" : "translate-x-1"
+              }`}
+          />
+        </button>
+      </div>
+
+      {/* SEZIONE: FANTA SQUADRE */}
+      <div className="flex flex-col gap-2">
+        <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold ml-1">Fanta Squadra</label>
+        <div className="relative">
+          <select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-2.5 pl-10 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer text-sm font-medium"
+          >
+            <option value="TUTTE">Tutte le squadre</option>
+            <option value="LIBERI">Svincolati (-)</option>
+            {TEAM_NAMES.map((name) => (
+              <option key={name} value={name}>{name}</option>
+            ))}
+          </select>
+          <Users className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
+          <div className="absolute right-3 top-4 pointer-events-none">
+            <div className="border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-500"></div>
+          </div>
+        </div>
+      </div>
 
       {/* SEZIONE: RUOLI */}
       <div className="flex flex-col gap-2">
@@ -59,11 +106,10 @@ export const FiltriSidebar = ({
             <button
               key={r}
               onClick={() => setRole(r)}
-              className={`py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                role === r 
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20" 
+              className={`py-1.5 rounded-lg text-[10px] font-bold transition-all ${role === r
+                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/20"
                   : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-              }`}
+                }`}
             >
               {roleLabels[r]}
             </button>
@@ -75,7 +121,7 @@ export const FiltriSidebar = ({
 
       {/* SEZIONE: RANGE SLIDERS */}
       <div className="flex flex-col gap-5">
-        
+
         {/* PV */}
         <div className="space-y-3">
           <div className="flex justify-between items-end">

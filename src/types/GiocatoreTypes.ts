@@ -23,6 +23,7 @@ export type StatisticheGiocatore = {
   Au: number
   FantaSquadra: string
   Costo: number
+  Fl: boolean 
 }
 
 export const FANTA_TEAMS = [

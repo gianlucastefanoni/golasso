@@ -26,9 +26,11 @@ export const Home = () => {
   // FILTRI
   const [search, setSearch] = useState("");
   const [minPv, setMinPv] = useState(0);
-  const [minMv, setMinMv] = useState(2);
-  const [minFm, setMinFm] = useState(2);
+  const [minMv, setMinMv] = useState(0);
+  const [minFm, setMinFm] = useState(0);
   const [role, setRole] = useState<"TUTTI" | "P" | "D" | "C" | "A">("TUTTI");
+  const [selectedTeam, setSelectedTeam] = useState("TUTTE");
+  const [showFuoriLista, setShowFuoriLista] = useState(false);
   const timeAgo = lastFetched
     ? `Aggiornato il ${new Date(lastFetched).toLocaleDateString([], { day: '2-digit', month: '2-digit' })} alle ${new Date(lastFetched).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     : "Dati non sincronizzati";
@@ -42,7 +44,7 @@ export const Home = () => {
   }, []);
 
   const resetFilters = () => {
-    setSearch(""); setMinPv(0); setMinMv(2); setMinFm(2); setRole("TUTTI");
+    setSearch(""); setMinPv(0); setMinMv(2); setMinFm(2); setRole("TUTTI"); setSelectedTeam("TUTTE"); setShowFuoriLista(false)
   };
 
   // ORDINAMENTO E FILTRAGGIO
@@ -52,7 +54,11 @@ export const Home = () => {
       g.Mv >= minMv &&
       g.Fm >= minFm &&
       g.Nome.toLowerCase().includes(search.toLowerCase()) &&
-      (role === "TUTTI" || g.R === role)
+      (role === "TUTTI" || g.R === role) &&
+      (selectedTeam === "TUTTE" || 
+      (selectedTeam === "LIBERI" && (g.FantaSquadra === "-" || !g.FantaSquadra)) ||
+      g.FantaSquadra === selectedTeam) &&
+      (showFuoriLista || (Number(g.Fl) === 0 || !g.Fl))
     )
     .sort((a, b) => {
       const { field, direction } = sortConfig;
@@ -120,6 +126,8 @@ export const Home = () => {
               minMv={minMv} setMinMv={setMinMv}
               minFm={minFm} setMinFm={setMinFm}
               role={role} setRole={setRole}
+              selectedTeam={selectedTeam} setSelectedTeam={setSelectedTeam}
+              showFuoriLista={showFuoriLista} setShowFuoriLista={setShowFuoriLista}
               onReset={resetFilters}
             />
           </aside>
@@ -174,6 +182,8 @@ export const Home = () => {
               minMv={minMv} setMinMv={setMinMv}
               minFm={minFm} setMinFm={setMinFm}
               role={role} setRole={setRole}
+              selectedTeam={selectedTeam} setSelectedTeam={setSelectedTeam}
+              showFuoriLista={showFuoriLista} setShowFuoriLista={setShowFuoriLista}
               onReset={resetFilters}
             />
           </aside>

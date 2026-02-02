@@ -60,7 +60,8 @@ export const ERStatistiche: React.FC = () => {
             Au: parseInt(row[colIndex('Au')]) || 0,
             // Campi inizializzati vuoti
             FantaSquadra: "-",
-            Costo: 0
+            Costo: 0,
+            Fl: false
           }));
 
         setPlayerStats(mapped);
@@ -103,6 +104,7 @@ export const ERStatistiche: React.FC = () => {
         const idxId = headers.indexOf('Id');
         const idxFanta = headers.indexOf('FantaSquadra');
         const idxCosto = headers.indexOf('Costo');
+        const idxFuoriLista = headers.indexOf('Fuori lista');
 
         // Creiamo una mappa temporanea per velocità { "id": { fanta: "...", costo: 0 } }
         const astaMap = new Map();
@@ -110,7 +112,8 @@ export const ERStatistiche: React.FC = () => {
           if (row[idxId]) {
             astaMap.set(parseInt(row[idxId]), {
               fanta: row[idxFanta] || "-",
-              costo: parseInt(row[idxCosto]) || 0
+              costo: parseInt(row[idxCosto]) || 0,
+              fl: row[idxFuoriLista] == '*'
             });
           }
         });
@@ -119,7 +122,7 @@ export const ERStatistiche: React.FC = () => {
         const updatedStats = playerStats.map(p => {
           const auctionData = astaMap.get(p.Cod);
           if (auctionData) {
-            return { ...p, FantaSquadra: auctionData.fanta, Costo: auctionData.costo };
+            return { ...p, FantaSquadra: auctionData.fanta, Costo: auctionData.costo, Fl: auctionData.fl };
           }
           return p;
         });
