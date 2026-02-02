@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, HashRouter } from "react-router-dom";
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import { useUserStore } from "./store/useUserStore";
 
 // Pagine
@@ -13,10 +13,15 @@ import UserRoleManager from "./pages/UserRoleManager";
 import { UserProfile } from "./types/UserTypes";
 import { FantaSquadraDetail } from "./pages/FantaSquadraDetail";
 
+interface ProtectedRouteProps {
+  children: ReactNode;
+  requiredRole?: UserProfile; // Assuming UserProfile is your enum/type
+}
+
 /**
  * Componente per proteggere le rotte in base a login e ruoli
  */
-function ProtectedRoute({ children, requiredRole = UserProfile.Lettore }) {
+function ProtectedRoute({ children, requiredRole = UserProfile.Lettore }: ProtectedRouteProps) {
   const { profile, loading, user } = useUserStore();
 
   // Se lo store sta ancora caricando profilo o auth, aspettiamo

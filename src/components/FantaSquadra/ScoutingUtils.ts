@@ -1,4 +1,4 @@
-import { StatisticheGiocatore } from "../types/GiocatoreTypes";
+import { StatisticheGiocatore } from "../../types/GiocatoreTypes";
 
 const TOP_CLUBS = ["ATALANTA", "BOLOGNA", "COMO", "JUVENTUS", "INTER", "MILAN", "NAPOLI", "ROMA"];
 
@@ -38,7 +38,7 @@ export const calculateScouting = (
     // 3. TAGLI
     const daTagliare = teamPlayers
         .filter(p => p.Fl || (Number(p.Mv) < 6 || Number(p.Fm) < 6))
-        .sort((a, b) => (a.Fl ? -1 : 1));
+        .sort((a) => (a.Fl ? -1 : 1));
 
     const iMieiRuoliNecessari = Array.from(new Set(daTagliare.map(p => p.R)));
 
