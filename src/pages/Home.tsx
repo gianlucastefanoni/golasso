@@ -3,17 +3,18 @@ import { StatisticheGiocatore } from "../types/GiocatoreTypes";
 import { getAllGiocatori } from "../api/ApiService";
 import { Link } from "react-router-dom";
 import { GiocatoreCard } from "../components/Home/cards/GiocatoreCard";
-import './Home.css'
 import { FiltriSidebar } from "../components/Home/FiltriSidebar";
 import { IntestazioniGiocatori } from "../components/Home/IntestazioniGiocatori";
-import { LogoutButton } from "../components/LogoutButton";
 import { Header } from "../components/Header";
+import { Filter, Settings2, Loader2 } from "lucide-react"; // Loader2 è perfetto per la girella
+import './Home.css'
 
 type SortField = keyof StatisticheGiocatore;
 type SortDirection = "asc" | "desc";
 
 export const Home = () => {
   const [giocatori, setGiocatori] = useState<StatisticheGiocatore[]>([]);
+  const [loading, setLoading] = useState(true); // Stato di caricamento iniziale
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
     field: "Fm",
     direction: "desc",
@@ -30,127 +31,132 @@ export const Home = () => {
 
   useEffect(() => {
     const fetchGiocatori = async () => {
-      const data = await getAllGiocatori();
-      setGiocatori(data);
+      try {
+        setLoading(true);
+        const data = await getAllGiocatori();
+        setGiocatori(data);
+      } catch (error) {
+        console.error("Errore nel recupero giocatori:", error);
+      } finally {
+        setLoading(false); // Smette di caricare sia in caso di successo che di errore
+      }
     };
     fetchGiocatori();
   }, []);
 
   const resetFilters = () => {
-    setSearch("");
-    setMinPv(0);
-    setMinMv(2);
-    setMinFm(2);
-    setRole("TUTTI");
+    setSearch(""); setMinPv(0); setMinMv(2); setMinFm(2); setRole("TUTTI");
   };
 
-  // ORDINAMENTO
-  const sortedGiocatori = [...giocatori];
-  if (sortConfig) {
-    sortedGiocatori.sort((a, b) => {
+  // ORDINAMENTO E FILTRAGGIO
+  const filteredGiocatori = [...giocatori]
+    .filter((g) =>
+      g.Pv >= minPv &&
+      g.Mv >= minMv &&
+      g.Fm >= minFm &&
+      g.Nome.toLowerCase().includes(search.toLowerCase()) &&
+      (role === "TUTTI" || g.R === role)
+    )
+    .sort((a, b) => {
       const { field, direction } = sortConfig;
-      let aValue = a[field];
-      let bValue = b[field];
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return direction === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
+      let aV = a[field]; let bV = b[field];
+      if (typeof aV === "string" && typeof bV === "string") {
+        return direction === "asc" ? aV.localeCompare(bV) : bV.localeCompare(aV);
       }
-      if (typeof aValue === "number" && typeof bValue === "number") {
-        return direction === "asc" ? aValue - bValue : bValue - aValue;
-      }
-      return 0;
+      return direction === "asc" ? (aV as number) - (bV as number) : (bV as number) - (aV as number);
     });
-  }
-
-  // FILTRAGGIO
-  const filteredGiocatori = sortedGiocatori.filter((g) =>
-    g.Pv >= minPv &&
-    g.Mv >= minMv &&
-    g.Fm >= minFm &&
-    g.Nome.toLowerCase().includes(search.toLowerCase()) &&
-    (role === "TUTTI" || g.R === role)
-  );
 
   const onHeaderClick = (field: SortField) => {
-    if (sortConfig?.field === field) {
-      setSortConfig({
-        field,
-        direction: sortConfig.direction === "asc" ? "desc" : "asc",
-      });
-    } else {
-      setSortConfig({ field, direction: "asc" });
-    }
+    setSortConfig({
+      field,
+      direction: sortConfig.field === field && sortConfig.direction === "desc" ? "asc" : "desc",
+    });
   };
 
   return (
-    <div className="w-full bg-gray-900 text-white min-h-screen h-[100dvh] p-4 md:px-0">
+    <div className="flex flex-col h-screen w-full bg-gray-900 text-white overflow-hidden">
       <Header />
-      <div className="w-full md:w-4/6 mx-auto flex flex-col gap-2 h-full">
-        <h2 className="mt-2">Elenco Giocatori</h2>
-        <div className="ml-auto mr-0">
+
+      <main className="flex-1 flex flex-col w-full max-w-7xl mx-auto px-4 py-6 overflow-hidden">
+        
+        {/* ACTION BAR */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-3xl font-black italic uppercase tracking-tighter">
+              Elenco <span className="text-emerald-500">Giocatori</span>
+            </h2>
+            <p className="text-gray-500 text-sm font-medium">
+              {loading ? "Caricamento in corso..." : `Trovati ${filteredGiocatori.length} giocatori`}
+            </p>
+          </div>
+          
           <Link
             to="/statistiche-er"
-            className="bg-emerald-600 px-3 py-1 rounded hover:bg-emerald-500 mb-2 inline-block"
+            className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-emerald-400 border border-emerald-500/20 px-4 py-2 rounded-xl transition-all font-bold text-sm"
           >
+            <Settings2 className="w-4 h-4" />
             Gestione Giocatori
           </Link>
         </div>
-        <div className="flex gap-4 flex-1 overflow-hidden">
 
-          {/* SIDEBAR DESKTOP */}
-          <div className="hidden lg:flex">
+        {/* CONTENT AREA */}
+        <div className="flex gap-6 flex-1 overflow-hidden">
+
+          <aside className="hidden lg:block">
             <FiltriSidebar
-              search={search}
-              setSearch={setSearch}
-              minPv={minPv}
-              setMinPv={setMinPv}
-              minMv={minMv}
-              setMinMv={setMinMv}
-              minFm={minFm}
-              setMinFm={setMinFm}
-              role={role}
-              setRole={setRole}
+              search={search} setSearch={setSearch}
+              minPv={minPv} setMinPv={setMinPv}
+              minMv={minMv} setMinMv={setMinMv}
+              minFm={minFm} setMinFm={setMinFm}
+              role={role} setRole={setRole}
               onReset={resetFilters}
             />
-          </div>
+          </aside>
 
-          {/* LISTA */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col bg-gray-800/20 rounded-2xl border border-gray-800 overflow-hidden relative">
             <IntestazioniGiocatori sortConfig={sortConfig} onSortClick={onHeaderClick} />
-            <section className="flex-1 overflow-y-auto flex flex-col gap-2 custom-scrollbar">
-              {filteredGiocatori.map((g) => (
-                <GiocatoreCard key={g.id} giocatore={g} />
-              ))}
+            
+            <section className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-3 custom-scrollbar">
+              {loading ? (
+                // LA GIRELLA
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/40 backdrop-blur-[2px] z-10">
+                  <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+                  <p className="mt-4 text-emerald-500 font-bold tracking-widest uppercase text-xs animate-pulse">
+                    Recupero Dati...
+                  </p>
+                </div>
+              ) : filteredGiocatori.length > 0 ? (
+                filteredGiocatori.map((g) => (
+                  <GiocatoreCard key={g.id} giocatore={g} />
+                ))
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-gray-600 italic py-20">
+                  <p>Nessun giocatore corrisponde ai filtri</p>
+                  <button onClick={resetFilters} className="text-emerald-500 underline mt-2">Reset</button>
+                </div>
+              )}
             </section>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* BOTTONE FLOTTANTE MOBILE */}
+      {/* ... (resto del codice per Mobile rimane uguale) */}
       <button
         onClick={() => setShowFilters(true)}
-        className="fixed bottom-6 right-6 bg-emerald-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg lg:hidden"
+        className="fixed bottom-6 right-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl w-14 h-14 flex items-center justify-center shadow-2xl shadow-emerald-900/40 lg:hidden transition-transform active:scale-90 z-40"
       >
-        Filtra
+        <Filter className="w-6 h-6" />
       </button>
 
       {/* DRAWER FILTRI MOBILE */}
       {showFilters && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          {/* overlay */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setShowFilters(false)}
-          />
-          {/* drawer vero e proprio */}
-          <aside className="relative ml-auto w-72 max-w-full h-full bg-gray-800 p-4 flex flex-col gap-4 custom-scrollbar overflow-auto">
-            <button
-              className="mb-2 self-end text-gray-400"
-              onClick={() => setShowFilters(false)}
-            >
-              ✕
-            </button>
+        <div className="fixed inset-0 z-[60] flex lg:hidden">
+          <div className="absolute inset-0 bg-gray-950/80 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
+          <aside className="relative ml-auto w-80 max-w-full h-full bg-gray-900 border-l border-gray-800 p-6 flex flex-col gap-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">Filtra</h3>
+              <button className="p-2 text-gray-500 hover:text-white" onClick={() => setShowFilters(false)}>✕</button>
+            </div>
             <FiltriSidebar
               search={search} setSearch={setSearch}
               minPv={minPv} setMinPv={setMinPv}

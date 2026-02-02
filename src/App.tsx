@@ -51,7 +51,7 @@ export default function App() {
           } 
         />
         <Route 
-          path="/user-manager" 
+          path="/gestione-ruoli" 
           element={
             <ProtectedRoute>
               <UserRoleManager />
