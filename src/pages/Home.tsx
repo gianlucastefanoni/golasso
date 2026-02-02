@@ -6,6 +6,8 @@ import { GiocatoreCard } from "../components/Home/cards/GiocatoreCard";
 import './Home.css'
 import { FiltriSidebar } from "../components/Home/FiltriSidebar";
 import { IntestazioniGiocatori } from "../components/Home/IntestazioniGiocatori";
+import { LogoutButton } from "../components/LogoutButton";
+import { Header } from "../components/Header";
 
 type SortField = keyof StatisticheGiocatore;
 type SortDirection = "asc" | "desc";
@@ -83,6 +85,7 @@ export const Home = () => {
 
   return (
     <div className="w-full bg-gray-900 text-white min-h-screen h-[100dvh] p-4 md:px-0">
+      <Header />
       <div className="w-full md:w-4/6 mx-auto flex flex-col gap-2 h-full">
         <h2 className="mt-2">Elenco Giocatori</h2>
         <div className="ml-auto mr-0">
@@ -93,7 +96,6 @@ export const Home = () => {
             Gestione Giocatori
           </Link>
         </div>
-
         <div className="flex gap-4 flex-1 overflow-hidden">
 
           {/* SIDEBAR DESKTOP */}
