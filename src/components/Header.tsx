@@ -23,6 +23,7 @@ export const Header = () => {
           <nav className="hidden md:flex items-center gap-4 text-sm font-medium text-gray-400">
              <Link to="/home" className="hover:text-emerald-400 transition-colors">Giocatori</Link>
              <Link to="/fantasquadra" className="hover:text-emerald-400 transition-colors">FantaSquadra</Link>
+             <Link to="/rosaottimale" className="hover:text-emerald-400 transition-colors">Rosa ottimale</Link>
              {isAdmin && <Link to="/gestione-ruoli" className="hover:text-emerald-400 transition-colors">Utenti</Link>}
           </nav>
 

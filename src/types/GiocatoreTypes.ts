@@ -41,3 +41,14 @@ export const FANTA_TEAMS = [
 
 // Se ti serve solo l'elenco dei nomi come stringhe
 export const TEAM_NAMES = FANTA_TEAMS.map(team => team.FantaSquadra);
+
+export type ConfigAsta = {
+  budget: number
+  giocatoriPerRuolo: {
+    P: number
+    D: number
+    C: number
+    A: number
+  }
+  minPartite: number
+}

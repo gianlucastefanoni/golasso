@@ -5,6 +5,7 @@ import { useUserStore } from "./store/useUserStore";
 // Pagine
 import { Home } from "./pages/Home";
 import { Giocatore } from "./pages/Giocatore";
+import { RosaOttimaleDetail } from "./pages/Rosaottimaledetail"
 import { StatisticheERPage } from "./pages/StatisticheERPage";
 import { Login } from "./pages/Login";
 import UserRoleManager from "./pages/UserRoleManager";
@@ -68,6 +69,12 @@ export default function App() {
         <Route path="/fantasquadra" element={
           <ProtectedRoute>
             <FantaSquadraDetail />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/rosaottimale" element={
+          <ProtectedRoute>
+            <RosaOttimaleDetail />
           </ProtectedRoute>
         } />
         
