@@ -2,41 +2,45 @@ export type Ruolo = 'P' | 'D' | 'C' | 'A'
 export type RuoloMantra = 'Por' | 'Dd' | 'Dc' | 'Ds' | 'B' | 'E' | 'M' | 'C' | 'W' | 'T' | 'A' | 'Pc'
 
 export type StatisticheGiocatore = {
-  id?: string
-  Cod: number
-  R: string
-  Rm: string[]
-  Nome: string
-  Squadra: string
-  Pv: number
-  Mv: number
-  Fm: number
-  Gf: number
-  Gs: number
-  Rp: number
-  Rc: number
-  Rf: number
-  Rs: number
-  Ass: number
-  Amm: number
-  Esp: number
-  Au: number
+  id?: number
+  stagione: number
+  creazione_dt?: Date
+  nome: string
+  id_squadra: number
+  squadra: string
+  r: string
+  rm: string[]
+  pv: number
+  mv: number
+  fm: number
+  gf: number
+  gs: number
+  rp: number
+  rc: number
+  rf: number
+  rs: number
+  ass: number
+  amm: number
+  esp: number
+  au: number
+  id_fanta_squadra: number
   FantaSquadra: string
-  Costo: number
-  Fl: boolean 
+  id_asta: number
+  costo: number
+  fl?: boolean 
 }
 
 export const FANTA_TEAMS = [
-  { id: "CK", FantaSquadra: "Coca Kolarov" },
-  { id: "MU", FantaSquadra: "Mannigger United" },
-  { id: "ING", FantaSquadra: "FC Ingiocabili" },
-  { id: "DIO", FantaSquadra: "Dio" }, // Nota: occhio che questo potrebbe dare nell'occhio se scali l'app!
-  { id: "ACP", FantaSquadra: "AC PICCHIA" },
-  { id: "ASB", FantaSquadra: "As Borra" },
-  { id: "ASP", FantaSquadra: "AS Piliqueta" },
-  { id: "HA", FantaSquadra: "Hiroshima Atomic" },
-  { id: "PK20", FantaSquadra: "Pieronekalulu20" },
-  { id: "OT", FantaSquadra: "Orlando Tragic" }
+  { id: 10, FantaSquadra: "Coca Kolarov" },
+  { id: 4, FantaSquadra: "Mannigger United" },
+  { id: 1, FantaSquadra: "FC Ingiocabili" },
+  { id: 3, FantaSquadra: "Dio" }, // Nota: occhio che questo potrebbe dare nell'occhio se scali l'app!
+  { id: 7, FantaSquadra: "AC PICCHIA" },
+  { id: 5, FantaSquadra: "As Borra" },
+  { id: 8, FantaSquadra: "AS Piliqueta" },
+  { id: 2, FantaSquadra: "Hiroshima Atomic" },
+  { id: 9, FantaSquadra: "Pieronekalulu20" },
+  { id: 6, FantaSquadra: "Orlando Tragic" }
 ] as const;
 
 // Se ti serve solo l'elenco dei nomi come stringhe
