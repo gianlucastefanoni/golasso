@@ -39,6 +39,10 @@ export const Header = () => {
               Rosa ottimale
             </Link>
 
+            <Link to="/nuova-configurazione" className="hover:text-emerald-400">
+              Nuova configurazione
+            </Link>
+
             {isAdmin && (
               <Link
                 to="/gestione-ruoli"
