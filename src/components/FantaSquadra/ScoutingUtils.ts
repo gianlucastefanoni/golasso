@@ -12,13 +12,14 @@ const ROLE_WEIGHTS: Record<string, number> = {
 export const calculateScouting = (
     giocatori: StatisticheGiocatore[],
     teamPlayers: StatisticheGiocatore[],
-    allTeams: string[]
+    allTeams: string[],
+    budgetTotale: number = 500
 ) => {
     // 1. BUDGET REALE (Solo IN LISTA)
     const powerRanking = allTeams.map(teamName => {
-        const activePlayers = giocatori.filter(g => g.FantaSquadra === teamName && !g.Fl);
-        const spent = activePlayers.reduce((acc, g) => acc + (Number(g.Costo) || 0), 0);
-        return { teamName, budget: 500 - spent };
+        const activePlayers = giocatori.filter(g => g.FantaSquadra === teamName && !g.fl);
+        const spent = activePlayers.reduce((acc, g) => acc + (Number(g.costo) || 0), 0);
+        return { teamName, budget: budgetTotale - spent };
     });
 
     const mioTeamName = teamPlayers[0]?.FantaSquadra;
@@ -27,28 +28,27 @@ export const calculateScouting = (
     // 2. ANALISI DELLA DOMANDA
     const domandaPerRuolo: Record<string, number> = { P: 0, D: 0, C: 0, A: 0 };
     allTeams.forEach(team => {
-        const teamFlops = giocatori.filter(g => 
-            g.FantaSquadra === team && (g.Fl || Number(g.Fm) < 6 || Number(g.Mv) < 6)
+        const teamFlops = giocatori.filter(g =>
+            g.FantaSquadra === team && (g.fl || Number(g.fm) < 6 || Number(g.mv) < 6)
         );
         teamFlops.forEach(f => {
-            if (domandaPerRuolo[f.R] !== undefined) domandaPerRuolo[f.R]++;
+            if (domandaPerRuolo[f.r] !== undefined) domandaPerRuolo[f.r]++;
         });
     });
 
     // 3. TAGLI
     const daTagliare = teamPlayers
-        .filter(p => p.Fl || (Number(p.Mv) < 6 || Number(p.Fm) < 6))
-        .sort((a) => (a.Fl ? -1 : 1));
+        .filter(p => p.fl || (Number(p.mv) < 6 || Number(p.fm) < 6))
+        .sort((a) => (a.fl ? -1 : 1));
 
-    const iMieiRuoliNecessari = Array.from(new Set(daTagliare.map(p => p.R)));
+    const iMieiRuoliNecessari = Array.from(new Set(daTagliare.map(p => p.r)));
 
-    // 4. RANKING E PREZZI (Fix toUpperCase)
+    // 4. RANKING E PREZZI
     const liberi = giocatori
-        .filter(g => (!g.FantaSquadra || g.FantaSquadra === "-" || g.FantaSquadra === "LIBERI") && !g.Fl)
+        .filter(g => (!g.FantaSquadra || g.FantaSquadra === "-" || g.FantaSquadra === "LIBERI") && !g.fl)
         .map(g => {
-            let score = Number(g.Fm) || 0;
-            // FIX: Controllo esistenza Squadra prima di toUpperCase()
-            const squadraPulita = g.Squadra?.toUpperCase() || "";
+            let score = Number(g.fm) || 0;
+            const squadraPulita = g.squadra?.toUpperCase() || "";
             if (TOP_CLUBS.includes(squadraPulita)) score += 0.5;
             return { ...g, dynamicScore: score };
         })
@@ -57,23 +57,21 @@ export const calculateScouting = (
     const rankingPerRuolo: Record<string, number> = { P: 0, D: 0, C: 0, A: 0 };
 
     const suggerimenti = liberi
-        .filter(g => iMieiRuoliNecessari.includes(g.R))
+        .filter(g => iMieiRuoliNecessari.includes(g.r))
         .map(g => {
-            rankingPerRuolo[g.R]++;
-            const position = rankingPerRuolo[g.R];
+            rankingPerRuolo[g.r]++;
+            const position = rankingPerRuolo[g.r];
 
-            // MOLTIPLICATORE ELITE (1° = 2.8x, 2° = 2.1x, 3° = 1.6x, Altri = 0.8x)
-            let eliteMultiplier = position === 1 ? 2.8 : position === 2 ? 2.1 : position === 3 ? 1.6 : 0.8;
+            const eliteMultiplier = position === 1 ? 2.8 : position === 2 ? 2.1 : position === 3 ? 1.6 : 0.8;
 
-            const offertaBuona = liberi.filter(l => l.R === g.R && Number(l.Fm) >= 6.5).length || 1;
-            const pressioneMercato = (domandaPerRuolo[g.R] / offertaBuona);
+            const offertaBuona = liberi.filter(l => l.r === g.r && Number(l.fm) >= 6.5).length || 1;
+            const pressioneMercato = (domandaPerRuolo[g.r] / offertaBuona);
 
-            const basePrice = (g.dynamicScore * ROLE_WEIGHTS[g.R]);
+            const basePrice = (g.dynamicScore * ROLE_WEIGHTS[g.r]);
             const scarcityIndex = Math.max(1, pressioneMercato * 0.4);
-            
+
             let stimaPrezzo = Math.round(basePrice * scarcityIndex * eliteMultiplier);
 
-            // Aggiustamento basato sui budget della lega
             const budgetAltissimi = powerRanking.filter(p => p.budget > 100).length;
             if (position <= 3) stimaPrezzo += (budgetAltissimi * 5);
 
@@ -85,7 +83,7 @@ export const calculateScouting = (
                 convenienza: mioBudget >= stimaPrezzo ? "ALTA" : "RISCHIOSA"
             };
         })
-        .filter(g => Number(g.Pv) >= 5 || TOP_CLUBS.includes(g.Squadra?.toUpperCase() || ""))
+        .filter(g => Number(g.pv) >= 5 || TOP_CLUBS.includes(g.squadra?.toUpperCase() || ""))
         .sort((a, b) => b.dynamicScore - a.dynamicScore);
 
     return { daTagliare, suggerimenti };

@@ -1,29 +1,23 @@
 import { useEffect, useState } from "react";
-import { loginWithGoogle } from "../firebase/loginGoogle";
 import { useNavigate } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { app } from "../firebase/firebaseconfig"; // Assicurati che il percorso sia corretto
+import { supabase } from "../supabase/supabaseClient";
+import { loginWithGoogle } from "../supabase/authService"
 import logo from '../assets/logo.svg';
-
-const auth = getAuth(app);
 
 export const Login = () => {
   const navigate = useNavigate();
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    // Ascolta i cambiamenti dello stato auth
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Se l'utente esiste, mandalo subito alla home
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
         navigate("/home");
       } else {
-        // Se non c'è utente, smetti di caricare e mostra la login
         setCheckingAuth(false);
       }
     });
-
-    return () => unsubscribe();
+  
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleLogin = async () => {

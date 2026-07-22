@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { getAllGiocatori } from '../api/ApiService';
+import { getAllGiocatori } from '../api/giocatoriApi';
 import { StatisticheGiocatore } from '../types/GiocatoreTypes';
 
 interface GiocatoriState {
@@ -43,7 +43,7 @@ export const useGiocatoriStore = create<GiocatoriState>()(
             lastFetched: ora,
             loading: false 
           });
-          console.log("📥 Query Firestore eseguita: Dati aggiornati");
+          console.log("📥 Query Supabase eseguita: Dati aggiornati");
         } catch (error) {
           console.error("Errore fetch:", error);
           set({ loading: false });
