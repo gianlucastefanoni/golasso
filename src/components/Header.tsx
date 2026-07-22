@@ -14,7 +14,6 @@ export const Header = () => {
   return (
     <header className="w-full bg-gray-900 border-b border-gray-800 sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-
         {/* Logo */}
         <Link to="/home" className="flex items-center gap-3">
           <img
@@ -38,16 +37,21 @@ export const Header = () => {
             <Link to="/rosaottimale" className="hover:text-emerald-400">
               Rosa ottimale
             </Link>
+            {isAdmin && (
+              <Link
+                to="/nuova-configurazione"
+                className="hover:text-emerald-400"
+              >
+                Nuova configurazione
+              </Link>
+            )}
 
-            <Link to="/nuova-configurazione" className="hover:text-emerald-400">
-              Nuova configurazione
+            <Link to="/asta-live" className="hover:text-emerald-400">
+              Asta live
             </Link>
 
             {isAdmin && (
-              <Link
-                to="/gestione-ruoli"
-                className="hover:text-emerald-400"
-              >
+              <Link to="/gestione-ruoli" className="hover:text-emerald-400">
                 Utenti
               </Link>
             )}
@@ -59,10 +63,7 @@ export const Header = () => {
         </div>
 
         {/* Mobile */}
-        <button
-          className="md:hidden text-white"
-          onClick={() => setOpen(!open)}
-        >
+        <button className="md:hidden text-white" onClick={() => setOpen(!open)}>
           {open ? <X size={28} /> : <Menu size={28} />}
         </button>
       </div>
@@ -93,6 +94,24 @@ export const Header = () => {
               className="px-4 py-3 text-gray-300 hover:bg-gray-800"
             >
               Rosa ottimale
+            </Link>
+
+            {isAdmin && (
+              <Link
+                to="/nuova-configurazione"
+                onClick={closeMenu}
+                className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+              >
+                Nuova configurazione
+              </Link>
+            )}
+
+            <Link
+              to="/asta-live"
+              onClick={closeMenu}
+              className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+            >
+              Asta live
             </Link>
 
             {isAdmin && (

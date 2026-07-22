@@ -5,15 +5,16 @@ import { useUserStore } from "./store/useUserStore";
 // Pagine
 import { Home } from "./pages/Home";
 import { GiocatoreDettaglio } from "./pages/GiocatoreDettaglio";
-import { RosaOttimaleDetail } from "./pages/Rosaottimaledetail"
+import { RosaOttimaleDetail } from "./pages/Rosaottimaledetail";
 import { StatisticheERPage } from "./pages/StatisticheERPage";
 import { Login } from "./pages/Login";
 import UserRoleManager from "./pages/UserRoleManager";
-import { NuovaConfigurazione } from "./pages/NuovaConfigurazione"
+import { NuovaConfigurazione } from "./pages/NuovaConfigurazione";
 
 // Tipi
 import { UserProfile } from "./types/UserTypes";
 import { FantaSquadraDetail } from "./pages/FantaSquadraDetail";
+import { AstaLive } from "./pages/AstaLive";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -23,7 +24,10 @@ interface ProtectedRouteProps {
 /**
  * Componente per proteggere le rotte in base a login e ruoli
  */
-function ProtectedRoute({ children, requiredRole = UserProfile.Lettore }: ProtectedRouteProps) {
+function ProtectedRoute({
+  children,
+  requiredRole = UserProfile.Lettore,
+}: ProtectedRouteProps) {
   const { profile, loading, user } = useUserStore();
 
   // Se lo store sta ancora caricando profilo o auth, aspettiamo
@@ -62,47 +66,77 @@ export default function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Rotte per tutti i loggati (Lettori) */}
-        <Route path="/home" element={
-          <ProtectedRoute>
-            <Home />
-          </ProtectedRoute>
-        } />
-        <Route path="/fantasquadra" element={
-          <ProtectedRoute>
-            <FantaSquadraDetail />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/home"
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/fantasquadra"
+          element={
+            <ProtectedRoute>
+              <FantaSquadraDetail />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/rosaottimale" element={
-          <ProtectedRoute>
-            <RosaOttimaleDetail />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/rosaottimale"
+          element={
+            <ProtectedRoute>
+              <RosaOttimaleDetail />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/giocatore/:id" element={
-          <ProtectedRoute>
-            <GiocatoreDettaglio />
-          </ProtectedRoute>
-        } />
-        <Route path="/nuova-configurazione" element={
-          <ProtectedRoute>
-            <NuovaConfigurazione />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/giocatore/:id"
+          element={
+            <ProtectedRoute>
+              <GiocatoreDettaglio />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/nuova-configurazione"
+          element={
+            <ProtectedRoute>
+              <NuovaConfigurazione />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Rotte solo per Scrittori e Admin */}
-        <Route path="/statistiche-er" element={
-          <ProtectedRoute requiredRole={UserProfile.Scrittore}>
-            <StatisticheERPage />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/statistiche-er"
+          element={
+            <ProtectedRoute requiredRole={UserProfile.Scrittore}>
+              <StatisticheERPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Rotte solo per Admin */}
-        <Route path="/gestione-ruoli" element={
-          <ProtectedRoute requiredRole={UserProfile.Admin}>
-            <UserRoleManager />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/gestione-ruoli"
+          element={
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
+              <UserRoleManager />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/asta-live"
+          element={
+            <ProtectedRoute requiredRole={UserProfile.Scrittore}>
+              <AstaLive />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Fallback */}
         <Route path="/*" element={<Navigate to="/home" replace />} />
