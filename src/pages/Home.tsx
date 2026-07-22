@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react";
-import { StatisticheGiocatore } from "../types/GiocatoreTypes";
+import { useEffect, useMemo, useState } from "react";
+import { StatisticheGiocatore, FantaSquadra } from "../types/GiocatoreTypes";
 import { Link } from "react-router-dom";
 import { GiocatoreCard } from "../components/Home/cards/GiocatoreCard";
 import { FiltriSidebar } from "../components/Home/FiltriSidebar";
 import { IntestazioniGiocatori } from "../components/Home/IntestazioniGiocatori";
 import { Header } from "../components/Header";
-import { Filter, Settings2, Loader2, RefreshCw } from "lucide-react"; // Loader2 è perfetto per la girella
+import { Filter, Settings2, Loader2, RefreshCw } from "lucide-react";
 import './Home.css'
 import { useUserStore } from "../store/useUserStore";
 import { useGiocatoriStore } from "../store/useGiocatoriStore";
+import { getAllFantaSquadre } from "../api/fantaSquadreApi";
+import { getAllStagioni } from "../api/astaApi";
 
 type SortField = keyof StatisticheGiocatore;
 type SortDirection = "asc" | "desc";
@@ -17,11 +19,16 @@ export const Home = () => {
   const { isEditor } = useUserStore();
   const { giocatori, loading, fetchGiocatori, lastFetched } = useGiocatoriStore();
   const [sortConfig, setSortConfig] = useState<{ field: SortField; direction: SortDirection }>({
-    field: "Fm",
+    field: "fm",
     direction: "desc",
   });
 
   const [showFilters, setShowFilters] = useState(false);
+
+  // DATI DI SUPPORTO (stagioni disponibili, fanta squadre)
+  const [stagioni, setStagioni] = useState<number[]>([]);
+  const [fantaSquadre, setFantaSquadre] = useState<FantaSquadra[]>([]);
+  const [selectedStagione, setSelectedStagione] = useState<number | "TUTTE">("TUTTE");
 
   // FILTRI
   const [search, setSearch] = useState("");
@@ -36,44 +43,69 @@ export const Home = () => {
     : "Dati non sincronizzati";
 
   const handleRefresh = () => {
-    // Chiamiamo il fetch con 'true' per ignorare la cache e scaricare tutto
     fetchGiocatori(true);
   };
+
   useEffect(() => {
-    fetchGiocatori(); // Fa la query solo se necessario
+    fetchGiocatori();
+
+    Promise.all([getAllStagioni(), getAllFantaSquadre()])
+      .then(([stagioniList, fantaList]) => {
+        setStagioni(stagioniList);
+        setFantaSquadre(fantaList);
+        if (stagioniList.length > 0) setSelectedStagione(stagioniList[0]); // più recente di default
+      })
+      .catch((err) => console.error("Errore caricamento stagioni/fanta squadre:", err));
   }, []);
 
   const resetFilters = () => {
-    setSearch(""); setMinPv(0); setMinMv(2); setMinFm(2); setRole("TUTTI"); setSelectedTeam("TUTTE"); setShowFuoriLista(false)
+    setSearch(""); setMinPv(0); setMinMv(2); setMinFm(2); setRole("TUTTI"); setSelectedTeam("TUTTE"); setShowFuoriLista(false);
+    if (stagioni.length > 0) setSelectedStagione(stagioni[0]);
   };
 
   // ORDINAMENTO E FILTRAGGIO
-  const filteredGiocatori = [...giocatori]
-    .filter((g) =>
-      g.Pv >= minPv &&
-      g.Mv >= minMv &&
-      g.Fm >= minFm &&
-      g.Nome.toLowerCase().includes(search.toLowerCase()) &&
-      (role === "TUTTI" || g.R === role) &&
-      (selectedTeam === "TUTTE" || 
-      (selectedTeam === "LIBERI" && (g.FantaSquadra === "-" || !g.FantaSquadra)) ||
-      g.FantaSquadra === selectedTeam) &&
-      (showFuoriLista || (Number(g.Fl) === 0 || !g.Fl))
-    )
-    .sort((a, b) => {
-      const { field, direction } = sortConfig;
-      let aV = a[field]; let bV = b[field];
-      if (typeof aV === "string" && typeof bV === "string") {
-        return direction === "asc" ? aV.localeCompare(bV) : bV.localeCompare(aV);
-      }
-      return direction === "asc" ? (aV as number) - (bV as number) : (bV as number) - (aV as number);
-    });
+  const filteredGiocatori = useMemo(() => {
+    return [...giocatori]
+      .filter((g) =>
+        (selectedStagione === "TUTTE" || g.stagione === selectedStagione) &&
+        g.pv >= minPv &&
+        g.mv >= minMv &&
+        g.fm >= minFm &&
+        g.nome.toLowerCase().includes(search.toLowerCase()) &&
+        (role === "TUTTI" || g.r === role) &&
+        (selectedTeam === "TUTTE" ||
+          (selectedTeam === "LIBERI" && (g.FantaSquadra === "-" || !g.FantaSquadra)) ||
+          g.FantaSquadra === selectedTeam) &&
+        (showFuoriLista || !g.fl)
+      )
+      .sort((a, b) => {
+        const { field, direction } = sortConfig;
+        const aV = a[field]; const bV = b[field];
+        if (typeof aV === "string" && typeof bV === "string") {
+          return direction === "asc" ? aV.localeCompare(bV) : bV.localeCompare(aV);
+        }
+        return direction === "asc" ? (Number(aV) - Number(bV)) : (Number(bV) - Number(aV));
+      });
+  }, [giocatori, selectedStagione, minPv, minMv, minFm, search, role, selectedTeam, showFuoriLista, sortConfig]);
 
   const onHeaderClick = (field: SortField) => {
     setSortConfig({
       field,
       direction: sortConfig.field === field && sortConfig.direction === "desc" ? "asc" : "desc",
     });
+  };
+
+  const filtriProps = {
+    search, setSearch,
+    minPv, setMinPv,
+    minMv, setMinMv,
+    minFm, setMinFm,
+    role, setRole,
+    selectedTeam, setSelectedTeam,
+    showFuoriLista, setShowFuoriLista,
+    stagioni, selectedStagione, setSelectedStagione,
+    fantaSquadre,
+    onReset: resetFilters,
   };
 
   return (
@@ -120,16 +152,7 @@ export const Home = () => {
         <div className="flex gap-6 flex-1 overflow-hidden">
 
           <aside className="hidden lg:block">
-            <FiltriSidebar
-              search={search} setSearch={setSearch}
-              minPv={minPv} setMinPv={setMinPv}
-              minMv={minMv} setMinMv={setMinMv}
-              minFm={minFm} setMinFm={setMinFm}
-              role={role} setRole={setRole}
-              selectedTeam={selectedTeam} setSelectedTeam={setSelectedTeam}
-              showFuoriLista={showFuoriLista} setShowFuoriLista={setShowFuoriLista}
-              onReset={resetFilters}
-            />
+            <FiltriSidebar {...filtriProps} />
           </aside>
 
           <div className="flex-1 flex flex-col bg-gray-800/20 rounded-2xl border border-gray-800 overflow-hidden relative">
@@ -137,7 +160,6 @@ export const Home = () => {
 
             <section className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-3 custom-scrollbar">
               {loading ? (
-                // LA GIRELLA
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/40 backdrop-blur-[2px] z-10">
                   <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
                   <p className="mt-4 text-emerald-500 font-bold tracking-widest uppercase text-xs animate-pulse">
@@ -146,7 +168,7 @@ export const Home = () => {
                 </div>
               ) : filteredGiocatori.length > 0 ? (
                 filteredGiocatori.map((g) => (
-                  <GiocatoreCard key={g.id} giocatore={g} />
+                  <GiocatoreCard key={`${g.id}-${g.stagione}`} giocatore={g} />
                 ))
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-gray-600 italic py-20">
@@ -159,7 +181,6 @@ export const Home = () => {
         </div>
       </main>
 
-      {/* ... (resto del codice per Mobile rimane uguale) */}
       <button
         onClick={() => setShowFilters(true)}
         className="fixed bottom-6 right-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl w-14 h-14 flex items-center justify-center shadow-2xl shadow-emerald-900/40 lg:hidden transition-transform active:scale-90 z-40"
@@ -167,7 +188,6 @@ export const Home = () => {
         <Filter className="w-6 h-6" />
       </button>
 
-      {/* DRAWER FILTRI MOBILE */}
       {showFilters && (
         <div className="fixed inset-0 z-[60] flex lg:hidden">
           <div className="absolute inset-0 bg-gray-950/80 backdrop-blur-sm" onClick={() => setShowFilters(false)} />
@@ -176,16 +196,7 @@ export const Home = () => {
               <h3 className="text-xl font-bold">Filtra</h3>
               <button className="p-2 text-gray-500 hover:text-white" onClick={() => setShowFilters(false)}>✕</button>
             </div>
-            <FiltriSidebar
-              search={search} setSearch={setSearch}
-              minPv={minPv} setMinPv={setMinPv}
-              minMv={minMv} setMinMv={setMinMv}
-              minFm={minFm} setMinFm={setMinFm}
-              role={role} setRole={setRole}
-              selectedTeam={selectedTeam} setSelectedTeam={setSelectedTeam}
-              showFuoriLista={showFuoriLista} setShowFuoriLista={setShowFuoriLista}
-              onReset={resetFilters}
-            />
+            <FiltriSidebar {...filtriProps} />
           </aside>
         </div>
       )}

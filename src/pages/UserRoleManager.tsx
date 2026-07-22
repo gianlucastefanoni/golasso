@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { updateUserRole, getAllUserProfiles } from '../firebase/firestoreUtils';
+import { updateUserRole, getAllUserProfiles } from '../supabase/userProfileService';
 import { UserProfile, FirestoreUser } from '../types/UserTypes';
 import { Link } from 'react-router-dom';
 import { useUserStore } from '../store/useUserStore'; // Importa lo store

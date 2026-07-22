@@ -1,4 +1,4 @@
-import { logout } from "../firebase/loginGoogle";
+import { logout } from "../supabase/authService"
 import { useNavigate } from "react-router-dom";
 
 export const LogoutButton = () => {

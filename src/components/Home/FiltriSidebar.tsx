@@ -1,5 +1,5 @@
-import { TEAM_NAMES } from "../../types/GiocatoreTypes";
-import { Search, RotateCcw, Users } from "lucide-react";
+import { Search, RotateCcw, Users, Calendar } from "lucide-react";
+import { FantaSquadra } from "../../types/GiocatoreTypes";
 
 type RoleType = "TUTTI" | "P" | "D" | "C" | "A";
 
@@ -18,6 +18,10 @@ interface Props {
   setSelectedTeam: (v: string) => void;
   showFuoriLista: boolean;
   setShowFuoriLista: (v: boolean) => void;
+  stagioni: number[];
+  selectedStagione: number | "TUTTE";
+  setSelectedStagione: (v: number | "TUTTE") => void;
+  fantaSquadre: FantaSquadra[];
   onReset: () => void;
 }
 
@@ -29,6 +33,8 @@ export const FiltriSidebar = ({
   role, setRole,
   selectedTeam, setSelectedTeam,
   showFuoriLista, setShowFuoriLista,
+  stagioni, selectedStagione, setSelectedStagione,
+  fantaSquadre,
   onReset
 }: Props) => {
 
@@ -42,6 +48,24 @@ export const FiltriSidebar = ({
 
   return (
     <aside className="w-64 flex flex-col gap-6 bg-gray-800/40 p-4 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-auto custom-scrollbar h-fit">
+
+      {/* SEZIONE: STAGIONE */}
+      <div className="flex flex-col gap-2">
+        <label className="text-[10px] uppercase tracking-widest text-gray-500 font-bold ml-1">Stagione</label>
+        <div className="relative">
+          <select
+            value={selectedStagione}
+            onChange={(e) => setSelectedStagione(e.target.value === "TUTTE" ? "TUTTE" : Number(e.target.value))}
+            className="w-full bg-gray-900 border border-gray-700 text-white rounded-xl px-4 py-2.5 pl-10 focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer text-sm font-medium"
+          >
+            <option value="TUTTE">Tutte le stagioni</option>
+            {stagioni.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+          <Calendar className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
+        </div>
+      </div>
 
       {/* SEZIONE: RICERCA */}
       <div className="flex flex-col gap-2">
@@ -87,8 +111,8 @@ export const FiltriSidebar = ({
           >
             <option value="TUTTE">Tutte le squadre</option>
             <option value="LIBERI">Svincolati (-)</option>
-            {TEAM_NAMES.map((name) => (
-              <option key={name} value={name}>{name}</option>
+            {fantaSquadre.map((f) => (
+              <option key={f.id} value={f.nome}>{f.nome}</option>
             ))}
           </select>
           <Users className="absolute left-3 top-3 w-4 h-4 text-gray-500" />

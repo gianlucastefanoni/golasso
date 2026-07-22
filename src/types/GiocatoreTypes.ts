@@ -2,11 +2,11 @@ export type Ruolo = 'P' | 'D' | 'C' | 'A'
 export type RuoloMantra = 'Por' | 'Dd' | 'Dc' | 'Ds' | 'B' | 'E' | 'M' | 'C' | 'W' | 'T' | 'A' | 'Pc'
 
 export type StatisticheGiocatore = {
-  id?: number
+  id: number
   stagione: number
   creazione_dt?: Date
   nome: string
-  id_squadra: number
+  id_squadra: number | null
   squadra: string
   r: string
   rm: string[]
@@ -23,28 +23,23 @@ export type StatisticheGiocatore = {
   amm: number
   esp: number
   au: number
-  id_fanta_squadra: number
+  id_fanta_squadra: number | null
   FantaSquadra: string
-  id_asta: number
-  costo: number
-  fl?: boolean 
+  id_asta: number | null
+  costo: number | null
+  fl?: boolean
 }
 
-export const FANTA_TEAMS = [
-  { id: 10, FantaSquadra: "Coca Kolarov" },
-  { id: 4, FantaSquadra: "Mannigger United" },
-  { id: 1, FantaSquadra: "FC Ingiocabili" },
-  { id: 3, FantaSquadra: "Dio" }, // Nota: occhio che questo potrebbe dare nell'occhio se scali l'app!
-  { id: 7, FantaSquadra: "AC PICCHIA" },
-  { id: 5, FantaSquadra: "As Borra" },
-  { id: 8, FantaSquadra: "AS Piliqueta" },
-  { id: 2, FantaSquadra: "Hiroshima Atomic" },
-  { id: 9, FantaSquadra: "Pieronekalulu20" },
-  { id: 6, FantaSquadra: "Orlando Tragic" }
-] as const;
+export type FantaSquadra = {
+  id: number
+  nome: string
+}
 
-// Se ti serve solo l'elenco dei nomi come stringhe
-export const TEAM_NAMES = FANTA_TEAMS.map(team => team.FantaSquadra);
+export type Squadra = {
+  id: number
+  nome: string
+  stagione: number
+}
 
 export type ConfigAsta = {
   budget: number
@@ -55,4 +50,57 @@ export type ConfigAsta = {
     A: number
   }
   minPartite: number
+}
+
+// Rispecchia 1:1 le colonne Postgres, snake_case, nomi tabella esatti (case-sensitive)
+
+export type AstaRow = {
+  id: number
+  creazione_dt: string
+  stagione: number | null
+  budget: number | null
+  partecipanti: number | null
+}
+
+export type SquadraRow = {
+  id: number
+  creazione_dt: string
+  nome: string | null
+  stagione: number | null
+}
+
+export type FantaSquadraRow = {
+  id: number
+  creazione_dt: string
+  nome: string | null
+}
+
+export type GiocatoreRow = {
+  id: number
+  stagione: number
+  creazione_dt: string
+  nome: string | null
+  id_squadra: number | null
+  r: string | null
+  rm: string | null
+  pv: number | null
+  mv: number | null
+  fm: number | null
+  gf: number | null
+  gs: number | null
+  rp: number | null
+  rc: number | null
+  rf: number | null
+  rs: number | null
+  ass: number | null
+  amm: number | null
+  esp: number | null
+  au: number | null
+  id_fanta_squadra: number | null
+  id_asta: number | null
+  costo: number | null
+  fl: boolean | null 
+  // presenti solo se richiesti con la join nella select
+  Squadre?: { nome: string | null } | null
+  Fanta_squadre?: { nome: string | null } | null
 }

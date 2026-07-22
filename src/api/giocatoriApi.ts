@@ -1,0 +1,132 @@
+import { supabase } from '../supabase/supabaseClient'
+import { StatisticheGiocatore } from '../types/GiocatoreTypes'
+import { GiocatoreRow } from '../types/database.types'
+
+function mapRowToGiocatore(row: GiocatoreRow): StatisticheGiocatore {
+  return {
+    id: row.id,
+    stagione: row.stagione,
+    creazione_dt: row.creazione_dt ? new Date(row.creazione_dt) : undefined,
+    nome: row.nome ?? '',
+    id_squadra: row.id_squadra,
+    squadra: row.Squadre?.nome ?? '',
+    r: row.r ?? '',
+    rm: row.rm ? row.rm.split(',').map(s => s.trim()).filter(Boolean) : [],
+    pv: row.pv ?? 0,
+    mv: row.mv ?? 0,
+    fm: row.fm ?? 0,
+    gf: row.gf ?? 0,
+    gs: row.gs ?? 0,
+    rp: row.rp ?? 0,
+    rc: row.rc ?? 0,
+    rf: row.rf ?? 0,
+    rs: row.rs ?? 0,
+    ass: row.ass ?? 0,
+    amm: row.amm ?? 0,
+    esp: row.esp ?? 0,
+    au: row.au ?? 0,
+    id_fanta_squadra: row.id_fanta_squadra,
+    FantaSquadra: row.Fanta_squadre?.nome ?? '',
+    id_asta: row.id_asta,
+    costo: row.costo,
+    fl: row.fl ?? false,
+  }
+}
+
+// Query con join automatiche: richiede la FK su id_fanta_squadra (vedi nota sopra).
+// Se non vuoi aggiungerla, usa getAllGiocatoriSenzaJoinFanta() più sotto.
+export async function getAllGiocatori(stagione?: number): Promise<StatisticheGiocatore[]> {
+  let query = supabase
+    .from('Giocatori')
+    .select(`
+      id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
+      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, fl, 
+      Squadre ( nome ),
+      Fanta_squadre ( nome )
+    `)
+
+  if (stagione !== undefined) {
+    query = query.eq('stagione', stagione)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Errore nel recuperare i giocatori:', error)
+    throw error
+  }
+
+  return (data ?? []).map(row => mapRowToGiocatore(row as unknown as GiocatoreRow))
+}
+
+// Fallback SENZA la FK su Fanta_squadre: due query + merge lato client.
+export async function getAllGiocatoriSenzaJoinFanta(stagione?: number): Promise<StatisticheGiocatore[]> {
+  let query = supabase
+    .from('Giocatori')
+    .select(`
+      id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
+      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo,
+      Squadre ( nome )
+    `)
+
+  if (stagione !== undefined) query = query.eq('stagione', stagione)
+
+  const [giocatoriRes, fantaRes] = await Promise.all([
+    query,
+    supabase.from('Fanta_squadre').select('id, nome'),
+  ])
+
+  if (giocatoriRes.error) throw giocatoriRes.error
+  if (fantaRes.error) throw fantaRes.error
+
+  const fantaMap = new Map((fantaRes.data ?? []).map(f => [f.id, f.nome ?? '']))
+
+  return (giocatoriRes.data ?? []).map(row => {
+    const mapped = mapRowToGiocatore(row as unknown as GiocatoreRow)
+    mapped.FantaSquadra = fantaMap.get(mapped.id_fanta_squadra) ?? ''
+    return mapped
+  })
+}
+
+export async function addStatisticheFromData(
+  statisticheData: StatisticheGiocatore[]
+): Promise<void> {
+  console.log(`Inizio elaborazione di ${statisticheData.length} giocatori...`)
+
+  const rows = statisticheData.map(s => ({
+    id: s.id,
+    stagione: s.stagione,
+    nome: s.nome,
+    id_squadra: s.id_squadra,
+    r: s.r,
+    rm: Array.isArray(s.rm) ? s.rm.join(',') : s.rm,
+    pv: s.pv,
+    mv: s.mv,
+    fm: s.fm,
+    gf: s.gf,
+    gs: s.gs,
+    rp: s.rp,
+    rc: s.rc,
+    rf: s.rf,
+    rs: s.rs,
+    ass: s.ass,
+    amm: s.amm,
+    esp: s.esp,
+    au: s.au,
+    id_fanta_squadra: s.id_fanta_squadra,
+    id_asta: s.id_asta,
+    costo: s.costo,
+    fl: s.fl,
+  }))
+
+  const { error } = await supabase
+    .from('Giocatori')
+    .upsert(rows, { onConflict: 'id,stagione' }) // chiave primaria composita
+
+  if (error) {
+    console.error('Errore durante upsert giocatori:', error)
+    throw error
+  }
+
+  console.log('Sincronizzazione completata con successo.')
+}

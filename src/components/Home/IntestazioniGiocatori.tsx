@@ -8,8 +8,6 @@ interface Props {
 }
 
 export const IntestazioniGiocatori = ({ sortConfig, onSortClick }: Props) => {
-  // Definiamo il layout delle colonne una volta sola
-  // ID(45px) | Ruolo(35px) | Nome(auto) | Team(100px) | PV(40px) | MV(50px) | FM(50px) | Arrow(25px)
   const gridLayout = "grid grid-cols-[45px_35px_1fr_100px_40px_50px_50px_50px] items-center gap-2 px-6 py-3";
 
   const getSortIcon = (field: SortField) => {
@@ -19,26 +17,26 @@ export const IntestazioniGiocatori = ({ sortConfig, onSortClick }: Props) => {
 
   return (
     <div className={`${gridLayout} bg-gray-900/50 text-gray-500 uppercase text-[10px] tracking-widest font-bold border-b border-gray-800`}>
-      <div className="cursor-pointer hover:text-gray-300" onClick={() => onSortClick("Cod")}>
-        ID{getSortIcon("Cod")}
+      <div className="cursor-pointer hover:text-gray-300" onClick={() => onSortClick("id")}>
+        ID{getSortIcon("id")}
       </div>
-      <div></div> {/* Spazio Ruolo */}
-      <div className="cursor-pointer hover:text-gray-300" onClick={() => onSortClick("Nome")}>
-        Giocatore{getSortIcon("Nome")}
+      <div></div>
+      <div className="cursor-pointer hover:text-gray-300" onClick={() => onSortClick("nome")}>
+        Giocatore{getSortIcon("nome")}
       </div>
-      <div className="text-right cursor-pointer hover:text-gray-300" onClick={() => onSortClick("Squadra")}>
-        Team{getSortIcon("Squadra")}
+      <div className="text-right cursor-pointer hover:text-gray-300" onClick={() => onSortClick("squadra")}>
+        Team{getSortIcon("squadra")}
       </div>
-      <div className="text-right cursor-pointer hover:text-gray-300" onClick={() => onSortClick("Pv")}>
-        PV{getSortIcon("Pv")}
+      <div className="text-right cursor-pointer hover:text-gray-300" onClick={() => onSortClick("pv")}>
+        PV{getSortIcon("pv")}
       </div>
-      <div className="text-right cursor-pointer hover:text-gray-300" onClick={() => onSortClick("Mv")}>
-        MV{getSortIcon("Mv")}
+      <div className="text-right cursor-pointer hover:text-gray-300" onClick={() => onSortClick("mv")}>
+        MV{getSortIcon("mv")}
       </div>
-      <div className="text-right text-emerald-500 cursor-pointer" onClick={() => onSortClick("Fm")}>
-        FM{getSortIcon("Fm")}
+      <div className="text-right text-emerald-500 cursor-pointer" onClick={() => onSortClick("fm")}>
+        FM{getSortIcon("fm")}
       </div>
-      <div></div> {/* Spazio Freccia */}
+      <div></div>
     </div>
   );
 };
