@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Header } from "../components/Header";
-import { getAllAste, Asta } from "../api/astaApi";
+import { getAllAste, getAllStagioni, Asta } from "../api/astaApi";
 import { getAllFantaSquadre } from "../api/fantaSquadreApi";
 import { getAllGiocatori } from "../api/giocatoriApi";
 import {
@@ -20,22 +20,26 @@ const DEFAULT_SLOT_CONFIG: SlotConfig = { P: 3, D: 8, C: 8, A: 6 };
 
 export const AstaLive = () => {
   const [aste, setAste] = useState<Asta[]>([]);
+  const [stagioniDisponibili, setStagioniDisponibili] = useState<number[]>([]);
   const [loadingAste, setLoadingAste] = useState(true);
   const [selectedAstaId, setSelectedAstaId] = useState<number | null>(null);
 
   const [fantaSquadre, setFantaSquadre] = useState<FantaSquadra[]>([]);
   const [giocatori, setGiocatori] = useState<StatisticheGiocatore[]>([]);
+  const [giocatoriAnnoPrec, setGiocatoriAnnoPrec] = useState<
+    Map<number, StatisticheGiocatore>
+  >(new Map());
   const [loadingGiocatori, setLoadingGiocatori] = useState(false);
 
   const [slotConfig, setSlotConfig] = useState<SlotConfig>(DEFAULT_SLOT_CONFIG);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
 
-  // Carica aste + fanta squadre all'avvio
   useEffect(() => {
-    Promise.all([getAllAste(), getAllFantaSquadre()])
-      .then(([asteList, teamsList]) => {
+    Promise.all([getAllAste(), getAllFantaSquadre(), getAllStagioni()])
+      .then(([asteList, teamsList, stagioniList]) => {
         setAste(asteList);
         setFantaSquadre(teamsList);
+        setStagioniDisponibili(stagioniList);
         if (asteList.length > 0) setSelectedAstaId(asteList[0].id);
       })
       .catch((err) =>
@@ -49,16 +53,41 @@ export const AstaLive = () => {
     [aste, selectedAstaId],
   );
 
-  // Carica i giocatori della stagione dell'asta selezionata
+  // Stagione immediatamente precedente a quella dell'asta, tra quelle esistenti a DB
+  const stagionePrecedente = useMemo(() => {
+    if (!astaSelezionata) return null;
+    const precedenti = stagioniDisponibili.filter(
+      (s) => s < astaSelezionata.stagione,
+    );
+    if (precedenti.length === 0) return null;
+    return Math.max(...precedenti);
+  }, [astaSelezionata, stagioniDisponibili]);
+
   useEffect(() => {
     if (!astaSelezionata) return;
     setLoadingGiocatori(true);
     setSelectedTeamId(null);
-    getAllGiocatori(astaSelezionata.stagione)
-      .then(setGiocatori)
+
+    const richieste: Promise<any>[] = [
+      getAllGiocatori(astaSelezionata.stagione),
+    ];
+    if (stagionePrecedente !== null)
+      richieste.push(getAllGiocatori(stagionePrecedente));
+
+    Promise.all(richieste)
+      .then(([giocatoriCorrente, giocatoriPrec]) => {
+        setGiocatori(giocatoriCorrente);
+        if (giocatoriPrec) {
+          setGiocatoriAnnoPrec(
+            new Map(giocatoriPrec.map((g: StatisticheGiocatore) => [g.id, g])),
+          );
+        } else {
+          setGiocatoriAnnoPrec(new Map());
+        }
+      })
       .catch((err) => console.error("Errore caricamento giocatori:", err))
       .finally(() => setLoadingGiocatori(false));
-  }, [astaSelezionata]);
+  }, [astaSelezionata, stagionePrecedente]);
 
   const giocatoriVisualizzati = useMemo(() => {
     if (selectedTeamId === null) return giocatori;
@@ -69,7 +98,6 @@ export const AstaLive = () => {
     setSlotConfig((prev) => ({ ...prev, [ruolo]: value }));
   };
 
-  // Aggiornamento ottimistico locale dopo un salvataggio riuscito, evita un refetch completo
   const handleAssegnato = (
     id: number,
     stagione: number,
@@ -135,6 +163,8 @@ export const AstaLive = () => {
             ) : (
               <ListaGiocatoriAsta
                 giocatori={giocatoriVisualizzati}
+                giocatoriAnnoPrec={giocatoriAnnoPrec}
+                stagionePrecedente={stagionePrecedente}
                 fantaSquadre={fantaSquadre}
                 onAssegnato={handleAssegnato}
               />
