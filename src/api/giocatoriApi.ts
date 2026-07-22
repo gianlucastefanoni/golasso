@@ -1,6 +1,5 @@
 import { supabase } from '../supabase/supabaseClient'
-import { StatisticheGiocatore } from '../types/GiocatoreTypes'
-import { GiocatoreRow } from '../types/database.types'
+import { StatisticheGiocatore, GiocatoreRow } from '../types/GiocatoreTypes'
 
 function mapRowToGiocatore(row: GiocatoreRow): StatisticheGiocatore {
   return {
