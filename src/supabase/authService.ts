@@ -4,7 +4,7 @@ export const loginWithGoogle = async () => {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/golasso/#/home`,
+      redirectTo: `${window.location.origin}/golasso`,
     },
   })
   if (error) {
