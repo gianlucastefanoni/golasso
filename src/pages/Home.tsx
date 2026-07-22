@@ -151,32 +151,39 @@ export const Home = () => {
         {/* CONTENT AREA */}
         <div className="flex gap-6 flex-1 overflow-hidden">
 
-          <aside className="hidden lg:block">
+          <aside className="hidden lg:block h-full">
             <FiltriSidebar {...filtriProps} />
           </aside>
 
           <div className="flex-1 flex flex-col bg-gray-800/20 rounded-2xl border border-gray-800 overflow-hidden relative">
-            <IntestazioniGiocatori sortConfig={sortConfig} onSortClick={onHeaderClick} />
+            {loading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/40 backdrop-blur-[2px] z-20">
+                <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
+                <p className="mt-4 text-emerald-500 font-bold tracking-widest uppercase text-xs animate-pulse">
+                  Recupero Dati...
+                </p>
+              </div>
+            )}
 
-            <section className="flex-1 overflow-y-auto p-2 md:p-4 flex flex-col gap-3 custom-scrollbar">
-              {loading ? (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/40 backdrop-blur-[2px] z-10">
-                  <Loader2 className="w-12 h-12 text-emerald-500 animate-spin" />
-                  <p className="mt-4 text-emerald-500 font-bold tracking-widest uppercase text-xs animate-pulse">
-                    Recupero Dati...
-                  </p>
-                </div>
-              ) : filteredGiocatori.length > 0 ? (
-                filteredGiocatori.map((g) => (
-                  <GiocatoreCard key={`${g.id}-${g.stagione}`} giocatore={g} />
-                ))
-              ) : (
-                <div className="h-full flex flex-col items-center justify-center text-gray-600 italic py-20">
-                  <p>Nessun giocatore corrisponde ai filtri</p>
-                  <button onClick={resetFilters} className="text-emerald-500 underline mt-2">Reset</button>
-                </div>
-              )}
-            </section>
+            {/* Un solo contenitore per scroll orizzontale + verticale: intestazione e righe si muovono sempre insieme */}
+            <div className="flex-1 overflow-auto custom-scrollbar">
+              <div className="min-w-[420px]">
+                <IntestazioniGiocatori sortConfig={sortConfig} onSortClick={onHeaderClick} />
+
+                <section className="p-2 md:p-4 flex flex-col gap-3">
+                  {!loading && filteredGiocatori.length > 0 ? (
+                    filteredGiocatori.map((g) => (
+                      <GiocatoreCard key={`${g.id}-${g.stagione}`} giocatore={g} />
+                    ))
+                  ) : !loading ? (
+                    <div className="h-full flex flex-col items-center justify-center text-gray-600 italic py-20">
+                      <p>Nessun giocatore corrisponde ai filtri</p>
+                      <button onClick={resetFilters} className="text-emerald-500 underline mt-2">Reset</button>
+                    </div>
+                  ) : null}
+                </section>
+              </div>
+            </div>
           </div>
         </div>
       </main>

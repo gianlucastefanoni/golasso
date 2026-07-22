@@ -2,12 +2,10 @@ import { StatisticheGiocatore } from "../../../types/GiocatoreTypes";
 import { RuoloBadge } from "../RuoloBadge";
 
 export const GiocatoreCardCompact = ({ giocatore, isOpen }: { giocatore: StatisticheGiocatore, isOpen: boolean }) => {
-  const gridLayout = "grid grid-cols-[45px_35px_1fr_100px_40px_50px_50px_25px] items-center gap-2 px-6 py-4";
+  const gridLayout = "grid grid-cols-[35px_minmax(140px,1fr)_100px_40px_50px_50px_50px] items-center gap-2 px-6 py-4";
 
   return (
     <div className={gridLayout}>
-      <span className="text-[10px] font-mono text-gray-500">#{giocatore.id}</span>
-
       <div className="flex justify-center">
         <RuoloBadge ruolo={giocatore.r} />
       </div>

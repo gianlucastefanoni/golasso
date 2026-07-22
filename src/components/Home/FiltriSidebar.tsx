@@ -47,7 +47,7 @@ export const FiltriSidebar = ({
   };
 
   return (
-    <aside className="w-64 flex flex-col gap-6 bg-gray-800/40 p-4 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-auto custom-scrollbar h-fit">
+    <aside className="w-64 flex flex-col gap-6 bg-gray-800/40 p-4 rounded-2xl border border-gray-700/50 backdrop-blur-sm overflow-y-auto custom-scrollbar h-full">
 
       {/* SEZIONE: STAGIONE */}
       <div className="flex flex-col gap-2">
