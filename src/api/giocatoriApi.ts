@@ -129,3 +129,23 @@ export async function addStatisticheFromData(
 
   console.log('Sincronizzazione completata con successo.')
 }
+
+export async function getStoricoGiocatore(id: number): Promise<StatisticheGiocatore[]> {
+  const { data, error } = await supabase
+    .from('Giocatori')
+    .select(`
+      id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
+      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, fl,
+      Squadre ( nome ),
+      Fanta_squadre ( nome )
+    `)
+    .eq('id', id)
+    .order('stagione', { ascending: true })
+
+  if (error) {
+    console.error('Errore nel recuperare lo storico del giocatore:', error)
+    throw error
+  }
+
+  return (data ?? []).map(row => mapRowToGiocatore(row as unknown as GiocatoreRow))
+}

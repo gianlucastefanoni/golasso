@@ -14,3 +14,18 @@ export async function getAllFantaSquadre(): Promise<FantaSquadra[]> {
 
   return (data ?? []).map(row => ({ id: row.id, nome: row.nome ?? '' }))
 }
+
+export async function createFantaSquadra(nome: string): Promise<FantaSquadra> {
+  const { data, error } = await supabase
+    .from('Fanta_squadre')
+    .insert({ nome })
+    .select('id, nome')
+    .single()
+
+  if (error) {
+    console.error('Errore nella creazione della fanta squadra:', error)
+    throw error
+  }
+
+  return { id: data.id, nome: data.nome ?? '' }
+}

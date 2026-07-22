@@ -46,3 +46,22 @@ export async function getAstaByStagione(stagione: number): Promise<Asta | null> 
     partecipanti: data.partecipanti ?? 0,
   }
 }
+
+export async function createAsta(nuovaAsta: Omit<Asta, 'id'>): Promise<Asta> {
+  const { data, error } = await supabase
+    .from('Asta')
+    .insert({
+      stagione: nuovaAsta.stagione,
+      budget: nuovaAsta.budget,
+      partecipanti: nuovaAsta.partecipanti,
+    })
+    .select('id, stagione, budget, partecipanti')
+    .single()
+
+  if (error) {
+    console.error("Errore nella creazione dell'asta:", error)
+    throw error
+  }
+
+  return data
+}

@@ -4,11 +4,12 @@ import { useUserStore } from "./store/useUserStore";
 
 // Pagine
 import { Home } from "./pages/Home";
-import { Giocatore } from "./pages/Giocatore";
+import { GiocatoreDettaglio } from "./pages/GiocatoreDettaglio";
 import { RosaOttimaleDetail } from "./pages/Rosaottimaledetail"
 import { StatisticheERPage } from "./pages/StatisticheERPage";
 import { Login } from "./pages/Login";
 import UserRoleManager from "./pages/UserRoleManager";
+import { NuovaConfigurazione } from "./pages/NuovaConfigurazione"
 
 // Tipi
 import { UserProfile } from "./types/UserTypes";
@@ -54,7 +55,7 @@ export default function App() {
   useEffect(() => {
     useUserStore.getState().initialize();
   }, []);
-  
+
   return (
     <HashRouter>
       <Routes>
@@ -77,10 +78,15 @@ export default function App() {
             <RosaOttimaleDetail />
           </ProtectedRoute>
         } />
-        
-        <Route path="/giocatore" element={
+
+        <Route path="/giocatore/:id" element={
           <ProtectedRoute>
-            <Giocatore />
+            <GiocatoreDettaglio />
+          </ProtectedRoute>
+        } />
+        <Route path="/nuova-configurazione" element={
+          <ProtectedRoute>
+            <NuovaConfigurazione />
           </ProtectedRoute>
         } />
 
