@@ -28,13 +28,17 @@ export const ERStatistiche: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [importLog, setImportLog] = useState<ImportLogEntry[]>([]);
-  const [fantaSquadreMap, setFantaSquadreMap] = useState<Map<string, number>>(new Map());
+  const [fantaSquadreMap, setFantaSquadreMap] = useState<Map<string, number>>(
+    new Map(),
+  );
 
   // Le fanta squadre (proprietari) non dipendono dalla stagione, le carichiamo una volta
   useEffect(() => {
     getAllFantaSquadre()
       .then((list) => {
-        setFantaSquadreMap(new Map(list.map((f) => [f.nome.trim().toUpperCase(), f.id])));
+        setFantaSquadreMap(
+          new Map(list.map((f) => [f.nome.trim().toUpperCase(), f.id])),
+        );
       })
       .catch((err) => console.error("Errore caricamento fanta squadre:", err));
   }, []);
@@ -55,7 +59,9 @@ export const ERStatistiche: React.FC = () => {
     try {
       // Carichiamo le squadre per QUESTA stagione, per risolvere nome -> id_squadra
       const squadre = await getAllSquadre(stagione);
-      const squadreMap = new Map(squadre.map((s) => [s.nome.trim().toUpperCase(), s.id]));
+      const squadreMap = new Map(
+        squadre.map((s) => [s.nome.trim().toUpperCase(), s.id]),
+      );
 
       const arrayBuffer = await file.arrayBuffer();
       const data = new Uint8Array(arrayBuffer);
@@ -64,9 +70,12 @@ export const ERStatistiche: React.FC = () => {
       const jsonData: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       const headerRowIndex = jsonData.findIndex(
-        (row) => row[0]?.toString().toLowerCase().includes("id") && row.includes("Nome")
+        (row) =>
+          row[0]?.toString().toLowerCase().includes("id") &&
+          row.includes("Nome"),
       );
-      if (headerRowIndex === -1) throw new Error("Intestazione Statistiche non trovata");
+      if (headerRowIndex === -1)
+        throw new Error("Intestazione Statistiche non trovata");
 
       const headers = jsonData[headerRowIndex];
       const rows = jsonData.slice(headerRowIndex + 1);
@@ -79,11 +88,19 @@ export const ERStatistiche: React.FC = () => {
         .filter((r) => r.length > 0 && r[0])
         .map((row: any[]) => {
           const nome = row[colIndex("Nome")] ?? "";
-          const squadraNome = (row[colIndex("Squadra")] ?? "").toString().trim();
-          const idSquadra = squadraNome ? squadreMap.get(squadraNome.toUpperCase()) ?? null : null;
+          const squadraNome = (row[colIndex("Squadra")] ?? "")
+            .toString()
+            .trim();
+          const idSquadra = squadraNome
+            ? (squadreMap.get(squadraNome.toUpperCase()) ?? null)
+            : null;
 
           if (squadraNome && idSquadra === null) {
-            log.push({ tipo: "squadra", giocatore: nome, valoreNonTrovato: squadraNome });
+            log.push({
+              tipo: "squadra",
+              giocatore: nome,
+              valoreNonTrovato: squadraNome,
+            });
           }
 
           return {
@@ -116,6 +133,7 @@ export const ERStatistiche: React.FC = () => {
             FantaSquadra: "-",
             id_asta: null,
             costo: 0,
+            costo_prev: null,
             fl: false,
           };
         });
@@ -150,9 +168,10 @@ export const ERStatistiche: React.FC = () => {
       const jsonData: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
       const headerRowIndex = jsonData.findIndex(
-        (row) => row.includes("Id") && row.includes("FantaSquadra")
+        (row) => row.includes("Id") && row.includes("FantaSquadra"),
       );
-      if (headerRowIndex === -1) throw new Error("Intestazioni 'Id', 'FantaSquadra' non trovate");
+      if (headerRowIndex === -1)
+        throw new Error("Intestazioni 'Id', 'FantaSquadra' non trovate");
 
       const headers = jsonData[headerRowIndex];
       const rows = jsonData.slice(headerRowIndex + 1);
@@ -162,7 +181,10 @@ export const ERStatistiche: React.FC = () => {
       const idxCosto = headers.indexOf("Costo");
       const idxFuoriLista = headers.indexOf("Fuori lista");
 
-      const astaMap = new Map<number, { fanta: string; costo: number; fl: boolean }>();
+      const astaMap = new Map<
+        number,
+        { fanta: string; costo: number; fl: boolean }
+      >();
       rows.forEach((row) => {
         if (row[idxId]) {
           astaMap.set(parseInt(row[idxId]), {
@@ -181,7 +203,8 @@ export const ERStatistiche: React.FC = () => {
 
         let idFantaSquadra: number | null = null;
         if (auctionData.fanta && auctionData.fanta !== "-") {
-          idFantaSquadra = fantaSquadreMap.get(auctionData.fanta.toUpperCase()) ?? null;
+          idFantaSquadra =
+            fantaSquadreMap.get(auctionData.fanta.toUpperCase()) ?? null;
           if (idFantaSquadra === null) {
             log.push({
               tipo: "fanta_squadra",
@@ -278,16 +301,24 @@ export const ERStatistiche: React.FC = () => {
             <div
               className={`p-4 border-2 border-dashed rounded-2xl flex items-center justify-center gap-3 transition-all ${playerStats.length > 0 ? "border-emerald-500/50 bg-emerald-500/5" : "border-gray-700 bg-gray-800/40 group-hover:border-emerald-500/30"}`}
             >
-              <UploadCloud className={playerStats.length > 0 ? "text-emerald-500" : "text-gray-500"} />
+              <UploadCloud
+                className={
+                  playerStats.length > 0 ? "text-emerald-500" : "text-gray-500"
+                }
+              />
               <span className="text-sm font-bold text-gray-300">
-                {playerStats.length > 0 ? `${playerStats.length} Giocatori Caricati` : "Carica Statistiche"}
+                {playerStats.length > 0
+                  ? `${playerStats.length} Giocatori Caricati`
+                  : "Carica Statistiche"}
               </span>
             </div>
           </div>
         </div>
 
         {/* INPUT ASTA */}
-        <div className={`flex flex-col gap-2 ${playerStats.length === 0 ? "opacity-30 pointer-events-none" : ""}`}>
+        <div
+          className={`flex flex-col gap-2 ${playerStats.length === 0 ? "opacity-30 pointer-events-none" : ""}`}
+        >
           <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-2">
             2. File Asta (lista_calciatori_lista calciatori_classic_fantacazzen)
           </label>
@@ -301,7 +332,11 @@ export const ERStatistiche: React.FC = () => {
             <div
               className={`p-4 border-2 border-dashed rounded-2xl flex items-center justify-center gap-3 transition-all ${astaLoaded ? "border-blue-500/50 bg-blue-500/5" : "border-gray-700 bg-gray-800/40 group-hover:border-blue-500/30"}`}
             >
-              {astaLoaded ? <CheckCircle2 className="text-blue-500" /> : <Database className="text-gray-500" />}
+              {astaLoaded ? (
+                <CheckCircle2 className="text-blue-500" />
+              ) : (
+                <Database className="text-gray-500" />
+              )}
               <span className="text-sm font-bold text-gray-300">
                 {astaLoaded ? "Asta Accoppiata" : "Carica Dati Asta"}
               </span>
@@ -342,7 +377,9 @@ export const ERStatistiche: React.FC = () => {
       {isLoading && (
         <div className="flex items-center justify-center gap-2 text-emerald-500 animate-pulse">
           <div className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />
-          <span className="text-xs font-black uppercase tracking-widest">Elaborazione Excel...</span>
+          <span className="text-xs font-black uppercase tracking-widest">
+            Elaborazione Excel...
+          </span>
         </div>
       )}
 
@@ -357,7 +394,9 @@ export const ERStatistiche: React.FC = () => {
               <span className="text-emerald-500 font-black italic uppercase tracking-widest text-xs">
                 Sincronizzazione
               </span>
-              <span className="text-emerald-500 font-black text-sm">{uploadProgress}%</span>
+              <span className="text-emerald-500 font-black text-sm">
+                {uploadProgress}%
+              </span>
             </div>
             <div className="w-full h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-700 shadow-inner">
               <div

@@ -4,7 +4,6 @@ import {
   Ruolo,
 } from "../../types/GiocatoreTypes";
 import { SlotConfig } from "./ConfigurazioneSquadre";
-import { Wallet } from "lucide-react";
 
 interface Props {
   fantaSquadre: FantaSquadra[];
