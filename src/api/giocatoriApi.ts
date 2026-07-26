@@ -33,6 +33,7 @@ function mapRowToGiocatore(row: GiocatoreRow): StatisticheGiocatore {
     FantaSquadra: row.Fanta_squadre?.nome ?? "",
     id_asta: row.id_asta,
     costo: row.costo,
+    costo_prev: row.costo_prev,
     fl: row.fl ?? false,
   };
 }
@@ -44,7 +45,7 @@ export async function getAllGiocatori(
 ): Promise<StatisticheGiocatore[]> {
   let query = supabase.from("Giocatori").select(`
       id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
-      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, fl, 
+      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, costo_prev, fl, 
       Squadre ( nome ),
       Fanta_squadre ( nome )
     `);
@@ -71,7 +72,7 @@ export async function getAllGiocatoriSenzaJoinFanta(
 ): Promise<StatisticheGiocatore[]> {
   let query = supabase.from("Giocatori").select(`
       id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
-      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo,
+      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, costo_prev,
       Squadre ( nome )
     `);
 
@@ -125,6 +126,7 @@ export async function addStatisticheFromData(
     id_fanta_squadra: s.id_fanta_squadra,
     id_asta: s.id_asta,
     costo: s.costo,
+    costo_prev: s.costo_prev,
     fl: s.fl,
   }));
 
@@ -148,7 +150,7 @@ export async function getStoricoGiocatore(
     .select(
       `
       id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
-      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, fl,
+      rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, costo_prev, fl,
       Squadre ( nome ),
       Fanta_squadre ( nome )
     `,
@@ -171,10 +173,11 @@ export async function assegnaGiocatore(
   stagione: number,
   id_fanta_squadra: number | null,
   costo: number | null,
+  costo_prev: number | null,
 ): Promise<void> {
   const { error } = await supabase
     .from("Giocatori")
-    .update({ id_fanta_squadra, costo })
+    .update({ id_fanta_squadra, costo, costo_prev })
     .eq("id", id)
     .eq("stagione", stagione); // chiave composita: entrambe le condizioni sono necessarie
 

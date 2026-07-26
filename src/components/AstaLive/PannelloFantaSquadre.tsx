@@ -17,6 +17,13 @@ interface Props {
 
 const RUOLI: Ruolo[] = ["P", "D", "C", "A"];
 
+const RUOLO_EMPTY_STYLE: Record<Ruolo, string> = {
+  P: "bg-sky-500/15 border-sky-500/40 text-sky-300",
+  D: "bg-emerald-500/15 border-emerald-500/40 text-emerald-300",
+  C: "bg-amber-500/15 border-amber-500/40 text-amber-300",
+  A: "bg-rose-500/15 border-rose-500/40 text-rose-300",
+};
+
 export const PannelloFantaSquadre = ({
   fantaSquadre,
   giocatori,
@@ -38,7 +45,7 @@ export const PannelloFantaSquadre = ({
         Mostra tutti i giocatori
       </button>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+      <div className="flex gap-2 w-full overflow-x-auto pb-2 custom-scrollbar">
         {fantaSquadre.map((team) => {
           const rosa = giocatori.filter((g) => g.id_fanta_squadra === team.id);
           const speso = rosa.reduce((acc, g) => acc + (g.costo ?? 0), 0);
@@ -58,18 +65,19 @@ export const PannelloFantaSquadre = ({
             <button
               key={team.id}
               onClick={() => onSelectTeam(isSelected ? null : team.id)}
-              className={`text-left p-4 rounded-2xl border transition-all ${
+              className={`text-left p-3 rounded-2xl border transition-all w-[115px] shrink-0 ${
                 isSelected
                   ? "bg-emerald-900/20 border-emerald-500/50 shadow-lg shadow-emerald-900/20"
                   : "bg-gray-900/60 border-gray-800 hover:border-gray-600"
               }`}
             >
               <div className="flex justify-between items-start mb-3">
-                <p className="font-black uppercase italic tracking-tighter text-sm truncate">
-                  {team.nome}
-                </p>
+                <div className="min-w-0 pr-2">
+                  <p className="font-black uppercase italic tracking-tighter text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
+                    {team.nome}
+                  </p>
+                </div>
                 <div className="flex items-center gap-1 text-emerald-400 flex-shrink-0">
-                  <Wallet className="w-3.5 h-3.5" />
                   <span
                     className={`font-black text-sm ${residui < 0 ? "text-red-400" : "text-emerald-400"}`}
                   >
@@ -78,7 +86,7 @@ export const PannelloFantaSquadre = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-1.5">
+              <div className="grid grid-cols-1 gap-1.5">
                 {RUOLI.map((r) => {
                   const occupati = slotOccupati[r];
                   const target = slotConfig[r];
@@ -88,8 +96,8 @@ export const PannelloFantaSquadre = ({
                       key={r}
                       className={`text-center py-1 rounded-lg text-[10px] font-bold border ${
                         pieno
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                          : "bg-gray-800 border-gray-700 text-gray-400"
+                          ? "bg-gray-800 border-gray-700 text-gray-400"
+                          : RUOLO_EMPTY_STYLE[r]
                       }`}
                     >
                       {r} {occupati}/{target}

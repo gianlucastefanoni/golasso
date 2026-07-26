@@ -14,7 +14,7 @@ import {
   SlotConfig,
 } from "../components/AstaLive/ConfigurazioneSquadre";
 import { PannelloFantaSquadre } from "../components/AstaLive/PannelloFantaSquadre";
-import { ListaGiocatoriAsta } from "../components/AstaLive/ListaGiocatoriAsta";
+import { ListaGiocatoriAsta } from "../components/AstaLive/ListaGiocatoriAsta.tsx";
 
 const DEFAULT_SLOT_CONFIG: SlotConfig = { P: 3, D: 8, C: 8, A: 6 };
 
@@ -103,6 +103,7 @@ export const AstaLive = () => {
     stagione: number,
     idFantaSquadra: number | null,
     costo: number | null,
+    costoPrev: number | null,
   ) => {
     setGiocatori((prev) =>
       prev.map((g) =>
@@ -113,6 +114,7 @@ export const AstaLive = () => {
               FantaSquadra:
                 fantaSquadre.find((f) => f.id === idFantaSquadra)?.nome ?? "",
               costo,
+              costo_prev: costoPrev,
             }
           : g,
       ),
