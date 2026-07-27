@@ -44,7 +44,7 @@ export const PannelloFantaSquadre = ({
         Mostra tutti i giocatori
       </button>
 
-      <div className="flex gap-2 w-full overflow-x-auto pb-2 custom-scrollbar">
+      <div className="grid grid-cols-12 gap-4 w-full overflow-x-auto pb-2 custom-scrollbar">
         {fantaSquadre.map((team) => {
           const rosa = giocatori.filter((g) => g.id_fanta_squadra === team.id);
           const speso = rosa.reduce((acc, g) => acc + (g.costo ?? 0), 0);
@@ -64,15 +64,15 @@ export const PannelloFantaSquadre = ({
             <button
               key={team.id}
               onClick={() => onSelectTeam(isSelected ? null : team.id)}
-              className={`text-left p-3 rounded-2xl border transition-all w-[115px] shrink-0 ${
+              className={`text-left p-3 rounded-2xl border transition-all shrink-0 ${
                 isSelected
                   ? "bg-emerald-900/20 border-emerald-500/50 shadow-lg shadow-emerald-900/20"
                   : "bg-gray-900/60 border-gray-800 hover:border-gray-600"
               }`}
             >
-              <div className="flex justify-between items-start mb-3">
-                <div className="min-w-0 pr-2">
-                  <p className="font-black uppercase italic tracking-tighter text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
+              <div className="flex flex-col justify-between items-start mb-3">
+                <div className="min-w-0 w-full">
+                  <p className="w-full font-black uppercase italic tracking-tighter text-sm truncate whitespace-nowrap overflow-hidden text-ellipsis">
                     {team.nome}
                   </p>
                 </div>

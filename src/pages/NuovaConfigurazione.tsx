@@ -9,9 +9,9 @@ import {
 import {
   createFantaSquadra,
   getAllFantaSquadre,
-  updateFantaSquadra,
-  type FantaSquadra
+  updateFantaSquadra
 } from "../api/fantaSquadreApi";
+import { FantaSquadra } from '../types/GiocatoreTypes'
 import { Header } from "../components/Header";
 
 export const NuovaConfigurazione = () => {
@@ -62,7 +62,7 @@ export const NuovaConfigurazione = () => {
       return;
     }
 
-    const asta = aste.find(a => a.id === id);
+    const asta = aste.find(a => a.id == id);
     if (asta) {
       setStagione(asta.stagione);
       setBudget(asta.budget);
@@ -95,7 +95,7 @@ export const NuovaConfigurazione = () => {
 
     try {
       if (astaInModifica) {
-        const aggiornata = await updateAsta(astaSelezionataId as string, {
+        const aggiornata = await updateAsta(astaSelezionataId, {
           stagione,
           budget,
           partecipanti
@@ -143,7 +143,7 @@ export const NuovaConfigurazione = () => {
 
     try {
       if (squadraInModifica) {
-        const aggiornata = await updateFantaSquadra(squadraSelezionataId as string, {
+        const aggiornata = await updateFantaSquadra(squadraSelezionataId, {
           nome: nomeSquadra.trim()
         });
         setSquadre(prev => prev.map(s => (s.id === aggiornata.id ? aggiornata : s)));
