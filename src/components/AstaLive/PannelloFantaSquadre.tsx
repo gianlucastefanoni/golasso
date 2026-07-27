@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import {
   FantaSquadra,
   StatisticheGiocatore,
@@ -31,20 +33,43 @@ export const PannelloFantaSquadre = ({
   selectedTeamId,
   onSelectTeam,
 }: Props) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <div className="flex flex-col gap-3">
-      <button
-        onClick={() => onSelectTeam(null)}
-        className={`text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-          selectedTeamId === null
-            ? "bg-emerald-600 text-white"
-            : "bg-gray-800 text-gray-400 hover:bg-gray-700"
-        }`}
-      >
-        Mostra tutti i giocatori
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onSelectTeam(null)}
+          className={`flex-1 text-left px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+            selectedTeamId === null
+              ? "bg-emerald-600 text-white"
+              : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+          }`}
+        >
+          Mostra tutti i giocatori
+        </button>
 
-      <div className="grid grid-cols-12 gap-4 w-full overflow-x-auto pb-2 custom-scrollbar">
+        <button
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-label={
+            mobileOpen ? "Nascondi fanta squadre" : "Mostra fanta squadre"
+          }
+          aria-expanded={mobileOpen}
+          className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl bg-gray-800 text-gray-400 hover:bg-gray-700 transition-all flex-shrink-0"
+        >
+          <ChevronDown
+            className={`w-4 h-4 transition-transform ${
+              mobileOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+      </div>
+
+      <div
+        className={`${
+          mobileOpen ? "grid" : "hidden"
+        } md:grid grid-cols-3 md:grid-cols-12 gap-4 w-full overflow-x-auto pb-2 custom-scrollbar`}
+      >
         {fantaSquadre.map((team) => {
           const rosa = giocatori.filter((g) => g.id_fanta_squadra === team.id);
           const speso = rosa.reduce((acc, g) => acc + (g.costo ?? 0), 0);

@@ -33,16 +33,16 @@ export const SelezioneAsta = ({
   }
 
   return (
-    <div className="bg-gray-900/60 rounded-2xl border border-gray-800 p-4 flex items-center gap-4">
+    <div className="bg-gray-900/60 rounded-2xl border border-gray-800 p-4 flex items-center gap-4 min-w-0">
       <Calendar className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-      <div className="flex flex-col gap-1 flex-1">
+      <div className="flex flex-col gap-1 flex-1 min-w-0">
         <label className="text-[10px] font-black uppercase tracking-widest text-gray-500">
           Asta in gestione
         </label>
         <select
           value={selectedAstaId ?? ""}
           onChange={(e) => onSelect(Number(e.target.value))}
-          className="bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 font-black text-lg outline-none focus:border-emerald-500 transition-all cursor-pointer"
+          className="w-full max-w-full min-w-0 bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 font-black text-lg outline-none focus:border-emerald-500 transition-all cursor-pointer truncate"
         >
           {aste.map((a) => (
             <option key={a.id} value={a.id}>

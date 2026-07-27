@@ -9,10 +9,10 @@ interface Props {
 }
 
 const RUOLI: { key: Ruolo; label: string; color: string }[] = [
-  { key: "P", label: "Portieri", color: "text-orange-400" },
-  { key: "D", label: "Difensori", color: "text-emerald-400" },
-  { key: "C", label: "Centrocampisti", color: "text-blue-400" },
-  { key: "A", label: "Attaccanti", color: "text-red-400" },
+  { key: "P", label: "POR", color: "text-orange-400" },
+  { key: "D", label: "DIF", color: "text-emerald-400" },
+  { key: "C", label: "CEN", color: "text-blue-400" },
+  { key: "A", label: "ATT", color: "text-red-400" },
 ];
 
 export const ConfigurazioneSquadre = ({ slotConfig, onChange }: Props) => {
@@ -28,7 +28,7 @@ export const ConfigurazioneSquadre = ({ slotConfig, onChange }: Props) => {
         {RUOLI.map((r) => (
           <div key={r.key} className="flex flex-col gap-1">
             <label
-              className={`text-[9px] font-bold uppercase tracking-widest ${r.color}`}
+              className={`text-[10px] font-bold uppercase tracking-widest ${r.color}`}
             >
               {r.label}
             </label>
