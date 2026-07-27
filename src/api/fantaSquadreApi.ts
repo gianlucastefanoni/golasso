@@ -29,3 +29,22 @@ export async function createFantaSquadra(nome: string): Promise<FantaSquadra> {
 
   return { id: data.id, nome: data.nome ?? '' }
 }
+
+export async function updateFantaSquadra(
+  id: number,
+  updates: Partial<Omit<FantaSquadra, 'id'>>
+): Promise<FantaSquadra> {
+  const { data, error } = await supabase
+    .from('Fanta_squadre')
+    .update({ nome: updates.nome })
+    .eq('id', id)
+    .select('id, nome')
+    .single()
+
+  if (error) {
+    console.error('Errore nell\'aggiornamento della fanta squadra:', error)
+    throw error
+  }
+
+  return { id: data.id, nome: data.nome ?? '' }
+}

@@ -86,3 +86,31 @@ export async function getAllAste(): Promise<Asta[]> {
     partecipanti: row.partecipanti ?? 0,
   }));
 }
+
+export async function updateAsta(
+  id: number,
+  updates: Partial<Omit<Asta, "id">>,
+): Promise<Asta> {
+  const { data, error } = await supabase
+    .from("Asta")
+    .update({
+      stagione: updates.stagione,
+      budget: updates.budget,
+      partecipanti: updates.partecipanti,
+    })
+    .eq("id", id)
+    .select("id, stagione, budget, partecipanti")
+    .single();
+
+  if (error) {
+    console.error("Errore nell'aggiornamento dell'asta:", error);
+    throw error;
+  }
+
+  return {
+    id: data.id,
+    stagione: data.stagione ?? 0,
+    budget: data.budget ?? 500,
+    partecipanti: data.partecipanti ?? 0,
+  };
+}
