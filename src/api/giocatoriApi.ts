@@ -101,7 +101,6 @@ export async function getAllGiocatoriSenzaJoinFanta(
 export async function addStatisticheFromData(
   statisticheData: StatisticheGiocatore[],
 ): Promise<void> {
-  console.log(`Inizio elaborazione di ${statisticheData.length} giocatori...`);
 
   const rows = statisticheData.map((s) => ({
     id: s.id,
@@ -130,16 +129,24 @@ export async function addStatisticheFromData(
     fl: s.fl,
   }));
 
-  const { error } = await supabase
-    .from("Giocatori")
-    .upsert(rows, { onConflict: "id,stagione" }); // chiave primaria composita
+
+  const { error } = await supabase.rpc(
+    "upsert_statistiche_giocatori",
+    {
+      giocatori: rows
+    }
+  );
+
 
   if (error) {
-    console.error("Errore durante upsert giocatori:", error);
+    console.error(
+      "Errore durante sincronizzazione statistiche:",
+      error
+    );
     throw error;
   }
 
-  console.log("Sincronizzazione completata con successo.");
+  console.log("Sincronizzazione completata");
 }
 
 export async function getStoricoGiocatore(
