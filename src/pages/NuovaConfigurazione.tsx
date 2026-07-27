@@ -3,15 +3,14 @@ import {
   createAsta,
   getAstaByStagione,
   getAllAste,
-  updateAsta,
-  type Asta
+  updateAsta
 } from "../api/astaApi";
 import {
   createFantaSquadra,
   getAllFantaSquadre,
   updateFantaSquadra
 } from "../api/fantaSquadreApi";
-import { FantaSquadra } from '../types/GiocatoreTypes'
+import { FantaSquadra, Asta } from '../types/GiocatoreTypes'
 import { Header } from "../components/Header";
 
 export const NuovaConfigurazione = () => {
