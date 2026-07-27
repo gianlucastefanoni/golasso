@@ -62,7 +62,7 @@ export const NuovaConfigurazione = () => {
       return;
     }
 
-    const asta = aste.find(a => a.id == id);
+    const asta = aste.find(a => (a.id as string) == id);
     if (asta) {
       setStagione(asta.stagione);
       setBudget(asta.budget);
@@ -81,7 +81,7 @@ export const NuovaConfigurazione = () => {
       return;
     }
 
-    const squadra = squadre.find(s => s.id === id);
+    const squadra = squadre.find(s => (s.id as string) === id);
     if (squadra) {
       setNomeSquadra(squadra.nome);
     }
@@ -95,7 +95,7 @@ export const NuovaConfigurazione = () => {
 
     try {
       if (astaInModifica) {
-        const aggiornata = await updateAsta(astaSelezionataId, {
+        const aggiornata = await updateAsta(Number(astaSelezionataId), {
           stagione,
           budget,
           partecipanti
@@ -143,7 +143,7 @@ export const NuovaConfigurazione = () => {
 
     try {
       if (squadraInModifica) {
-        const aggiornata = await updateFantaSquadra(squadraSelezionataId, {
+        const aggiornata = await updateFantaSquadra(Number(squadraSelezionataId), {
           nome: nomeSquadra.trim()
         });
         setSquadre(prev => prev.map(s => (s.id === aggiornata.id ? aggiornata : s)));
