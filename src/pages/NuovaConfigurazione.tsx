@@ -3,14 +3,15 @@ import {
   createAsta,
   getAstaByStagione,
   getAllAste,
-  updateAsta
+  updateAsta,
+  type Asta
 } from "../api/astaApi";
 import {
   createFantaSquadra,
   getAllFantaSquadre,
   updateFantaSquadra
 } from "../api/fantaSquadreApi";
-import { FantaSquadra, Asta } from '../types/GiocatoreTypes'
+import { FantaSquadra } from '../types/GiocatoreTypes'
 import { Header } from "../components/Header";
 
 export const NuovaConfigurazione = () => {
@@ -61,7 +62,7 @@ export const NuovaConfigurazione = () => {
       return;
     }
 
-    const asta = aste.find(a => (a.id as string) == id);
+    const asta = aste.find(a => ((a.id as unknown) as string) == id);
     if (asta) {
       setStagione(asta.stagione);
       setBudget(asta.budget);
@@ -80,7 +81,7 @@ export const NuovaConfigurazione = () => {
       return;
     }
 
-    const squadra = squadre.find(s => (s.id as string) === id);
+    const squadra = squadre.find(s => ((s.id as unknown) as string) === id);
     if (squadra) {
       setNomeSquadra(squadra.nome);
     }
