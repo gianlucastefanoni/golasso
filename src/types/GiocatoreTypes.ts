@@ -41,6 +41,9 @@ export type StatisticheGiocatore = {
   costo: number | null;
   costo_prev: number | null;
   fl?: boolean;
+  fascia_id?: number | null;
+  obiettivo?: boolean | null;
+  note?: string | null;
 };
 
 export type FantaSquadra = {
