@@ -118,3 +118,10 @@ export type GiocatoreRow = {
   Squadre?: { nome: string | null } | null;
   Fanta_squadre?: { nome: string | null } | null;
 };
+
+export type FasciaRow = {
+  id: number;
+  created_at?: string;
+  nome: string | null;
+  colore: string | null;
+};
