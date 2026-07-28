@@ -90,8 +90,8 @@ export const ListaGiocatoriAsta = ({
   const [filtroSquadra, setFiltroSquadra] = useState("ALL");
   const [filtroFantaSquadra, setFiltroFantaSquadra] = useState("ALL");
   const [soloSvincolati, setSoloSvincolati] = useState(false);
-  const [sortField, setSortField] = useState<SortField>("nome");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortField, setSortField] = useState<SortField>("costo_prev");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [bozze, setBozze] = useState<Record<number, BozzaGiocatore>>({});
   const [savingIds, setSavingIds] = useState<Record<number, boolean>>({});
   const [analisiOverrides, setAnalisiOverrides] = useState<
@@ -204,7 +204,7 @@ export const ListaGiocatoriAsta = ({
         return isValidNumber(adjusted) ? adjusted : -1;
       }
       default:
-        return g.nome;
+        return g.costo_prev;
     }
   };
 
@@ -446,19 +446,6 @@ export const ListaGiocatoriAsta = ({
           {opzioniSquadre.map((squadra) => (
             <option key={squadra} value={squadra}>
               {squadra}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={filtroFantaSquadra}
-          onChange={(e) => setFiltroFantaSquadra(e.target.value)}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs outline-none focus:border-emerald-500"
-        >
-          <option value="ALL">Fantasquadra: tutte</option>
-          {opzioniFantaSquadre.map((f) => (
-            <option key={f.id} value={String(f.id)}>
-              {f.nome}
             </option>
           ))}
         </select>
