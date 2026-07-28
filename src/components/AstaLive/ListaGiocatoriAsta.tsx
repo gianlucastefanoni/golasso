@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
-import { StatisticheGiocatore, FantaSquadra, GiocatoreAnalisiRow } from "../../types/GiocatoreTypes";
+import {
+  StatisticheGiocatore,
+  FantaSquadra,
+  GiocatoreAnalisiRow,
+} from "../../types/GiocatoreTypes";
 import { FasciaRow } from "../../api/fasceApi";
 import { RuoloBadge } from "../Home/RuoloBadge";
 import {
@@ -69,7 +73,7 @@ interface Props {
     stagione: number,
     idFantaSquadra: number | null,
     costo: number | null,
-    costoPrev: number | null,
+    costoPrev: number | null
   ) => void;
 }
 
@@ -110,22 +114,18 @@ export const ListaGiocatoriAsta = ({
         return {
           ...g,
           fascia_id:
-            override.fascia_id !== undefined
-              ? override.fascia_id
-              : g.fascia_id,
+            override.fascia_id !== undefined ? override.fascia_id : g.fascia_id,
           obiettivo:
-            override.obiettivo !== undefined
-              ? override.obiettivo
-              : g.obiettivo,
+            override.obiettivo !== undefined ? override.obiettivo : g.obiettivo,
           note: override.note !== undefined ? override.note : g.note,
         };
       }),
-    [giocatori, analisiOverrides],
+    [giocatori, analisiOverrides]
   );
 
   const fasceOrdinate = useMemo(
     () => fasce.slice().sort((a, b) => a.id - b.id),
-    [fasce],
+    [fasce]
   );
 
   const percentualiDiffPerRuolo = useMemo<Record<RuoloAsta, number>>(() => {
@@ -162,14 +162,14 @@ export const ListaGiocatoriAsta = ({
   const opzioniSquadre = useMemo(
     () =>
       Array.from(new Set(effettivi.map((g) => g.squadra).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b),
+        (a, b) => a.localeCompare(b)
       ),
-    [effettivi],
+    [effettivi]
   );
 
   const opzioniFantaSquadre = useMemo(
     () => fantaSquadre.slice().sort((a, b) => a.nome.localeCompare(b.nome)),
-    [fantaSquadre],
+    [fantaSquadre]
   );
 
   const calcolaAdjusted = (ruolo: string, costoPrev: number | null) => {
@@ -242,11 +242,7 @@ export const ListaGiocatoriAsta = ({
       const matchSvincolati = !soloSvincolati || g.id_fanta_squadra === null;
 
       return (
-        matchTab &&
-        matchSearch &&
-        matchSquadra &&
-        matchFanta &&
-        matchSvincolati
+        matchTab && matchSearch && matchSquadra && matchFanta && matchSvincolati
       );
     });
 
@@ -264,7 +260,7 @@ export const ListaGiocatoriAsta = ({
 
     const idFasceNote = new Set(fasceOrdinate.map((f) => f.id));
     const senzaFascia = candidati.filter(
-      (g) => g.fascia_id == null || !idFasceNote.has(g.fascia_id),
+      (g) => g.fascia_id == null || !idFasceNote.has(g.fascia_id)
     );
     if (senzaFascia.length > 0) {
       risultato.push({ fascia: null, giocatori: ordina(senzaFascia) });
@@ -284,7 +280,10 @@ export const ListaGiocatoriAsta = ({
     percentualiDiffPerRuolo,
   ]);
 
-  const totaleRisultati = gruppi.reduce((acc, g) => acc + g.giocatori.length, 0);
+  const totaleRisultati = gruppi.reduce(
+    (acc, g) => acc + g.giocatori.length,
+    0
+  );
 
   const getBozza = (g: StatisticheGiocatore) =>
     bozze[g.id] ?? {
@@ -295,7 +294,7 @@ export const ListaGiocatoriAsta = ({
 
   const setBozza = (
     g: StatisticheGiocatore,
-    patch: Partial<BozzaGiocatore>,
+    patch: Partial<BozzaGiocatore>
   ) => {
     setBozze((prev) => ({
       ...prev,
@@ -305,7 +304,7 @@ export const ListaGiocatoriAsta = ({
 
   const handleSalva = async (
     g: StatisticheGiocatore,
-    patch?: Partial<BozzaGiocatore>,
+    patch?: Partial<BozzaGiocatore>
   ) => {
     const bozza = patch ? { ...getBozza(g), ...patch } : getBozza(g);
     const idFantaSquadra = bozza.idFantaSquadra
@@ -327,7 +326,7 @@ export const ListaGiocatoriAsta = ({
         g.stagione,
         idFantaSquadra,
         costo,
-        costoPrev,
+        costoPrev
       );
       onAssegnato(g.id, g.stagione, idFantaSquadra, costo, costoPrev);
     } catch (err) {
@@ -345,17 +344,16 @@ export const ListaGiocatoriAsta = ({
   // così un upsert non "cancella" involontariamente gli altri due se non toccati.
   const persistiAnalisi = async (
     g: StatisticheGiocatore,
-    patch: AnalisiOverride,
+    patch: AnalisiOverride
   ) => {
-    const merged: Partial<Omit<GiocatoreAnalisiRow, "id" | "stagione" | "creazione_dt">> = {
+    const merged: Partial<
+      Omit<GiocatoreAnalisiRow, "id" | "stagione" | "creazione_dt">
+    > = {
       fascia_id:
         patch.fascia_id !== undefined ? patch.fascia_id : g.fascia_id ?? null,
       obiettivo:
-        patch.obiettivo !== undefined
-          ? patch.obiettivo
-          : g.obiettivo ?? false,
-      note:
-        patch.note !== undefined ? patch.note : g.note ?? null,
+        patch.obiettivo !== undefined ? patch.obiettivo : g.obiettivo ?? false,
+      note: patch.note !== undefined ? patch.note : g.note ?? null,
     };
 
     setAnalisiOverrides((prev) => ({ ...prev, [g.id]: merged }));
@@ -388,7 +386,7 @@ export const ListaGiocatoriAsta = ({
   const salvaNoteModale = async () => {
     if (!noteModal) return;
     const giocatore = effettivi.find(
-      (g) => g.id === noteModal.giocatoreId && g.stagione === noteModal.stagione,
+      (g) => g.id === noteModal.giocatoreId && g.stagione === noteModal.stagione
     );
     if (!giocatore) {
       setNoteModal(null);
@@ -409,9 +407,9 @@ export const ListaGiocatoriAsta = ({
             key={ruolo}
             type="button"
             onClick={() => setActiveTab(ruolo)}
-            className={`flex-1 py-3 text-xs font-black uppercase tracking-widest transition-all ${
+            className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
               activeTab === ruolo
-                ? "bg-emerald-500 text-black"
+                ? "bg-emerald-500 text-white"
                 : "text-gray-400 hover:bg-gray-800/60"
             }`}
           >
@@ -465,16 +463,6 @@ export const ListaGiocatoriAsta = ({
           ))}
         </select>
 
-        <label className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs">
-          <input
-            type="checkbox"
-            checked={soloSvincolati}
-            onChange={(e) => setSoloSvincolati(e.target.checked)}
-            className="accent-emerald-500"
-          />
-          Solo svincolati
-        </label>
-
         <select
           value={sortField}
           onChange={(e) => setSortField(e.target.value as SortField)}
@@ -499,6 +487,16 @@ export const ListaGiocatoriAsta = ({
           <option value="asc">Ordine: crescente</option>
           <option value="desc">Ordine: decrescente</option>
         </select>
+
+        <label className="flex items-center gap-2 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-xs">
+          <input
+            type="checkbox"
+            checked={soloSvincolati}
+            onChange={(e) => setSoloSvincolati(e.target.checked)}
+            className="accent-emerald-500"
+          />
+          Solo svincolati
+        </label>
 
         <button
           type="button"
@@ -557,10 +555,10 @@ export const ListaGiocatoriAsta = ({
                 <tr key={`fascia-${fascia?.id ?? "none"}`}>
                   <td
                     colSpan={TOTALE_COLONNE}
-                    className="py-2 px-3 text-[10px] font-black uppercase tracking-widest"
+                    className="py-2 px-3 text-[10px] font-bold uppercase tracking-widest"
                     style={{
                       backgroundColor: fascia?.colore ?? "#374151",
-                      color: fascia?.colore ? "#0a0a0a" : "#d1d5db",
+                      color: fascia?.colore ? "#FFFFFF" : "#d1d5db",
                     }}
                   >
                     {fascia?.nome ?? "Senza fascia"}
@@ -575,14 +573,16 @@ export const ListaGiocatoriAsta = ({
                   const costoPrevBozza = parseNumberInput(bozza.costoPrev);
                   const adjustedPrev = calcolaAdjusted(
                     g.r,
-                    costoPrevBozza ?? g.costo_prev ?? null,
+                    costoPrevBozza ?? g.costo_prev ?? null
                   );
                   const haNote = Boolean(g.note && g.note.trim() !== "");
 
                   return (
                     <tr
                       key={g.id}
-                      className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-all ${isAssegnato ? "bg-emerald-500/5" : ""}`}
+                      className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-all ${
+                        isAssegnato ? "bg-emerald-500/5" : ""
+                      }`}
                     >
                       <td className="py-2 px-2">
                         <RuoloBadge ruolo={g.r} />
@@ -601,7 +601,9 @@ export const ListaGiocatoriAsta = ({
                       <td className="py-2 px-2">
                         <select
                           value={g.fascia_id ?? ""}
-                          onChange={(e) => handleCambiaFascia(g, e.target.value)}
+                          onChange={(e) =>
+                            handleCambiaFascia(g, e.target.value)
+                          }
                           className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-emerald-500 min-w-[110px]"
                         >
                           <option value="">— Nessuna —</option>
@@ -837,7 +839,8 @@ export const ListaGiocatoriAsta = ({
           <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-black uppercase italic tracking-tighter text-sm">
-                Nota — <span className="text-emerald-500">{noteModal.nome}</span>
+                Nota —{" "}
+                <span className="text-emerald-500">{noteModal.nome}</span>
               </h3>
               <button
                 type="button"
@@ -851,7 +854,7 @@ export const ListaGiocatoriAsta = ({
               value={noteModal.testo}
               onChange={(e) =>
                 setNoteModal((prev) =>
-                  prev ? { ...prev, testo: e.target.value } : prev,
+                  prev ? { ...prev, testo: e.target.value } : prev
                 )
               }
               rows={5}
