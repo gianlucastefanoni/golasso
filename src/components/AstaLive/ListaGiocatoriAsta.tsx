@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { StatisticheGiocatore, FantaSquadra } from "../../types/GiocatoreTypes";
+import { StatisticheGiocatore, FantaSquadra, GiocatoreAnalisiRow } from "../../types/GiocatoreTypes";
 import { FasciaRow } from "../../api/fasceApi";
 import { RuoloBadge } from "../Home/RuoloBadge";
 import {
@@ -347,14 +347,15 @@ export const ListaGiocatoriAsta = ({
     g: StatisticheGiocatore,
     patch: AnalisiOverride,
   ) => {
-    const merged: Required<GiocatoreAnalisiRow> = {
+    const merged: Partial<Omit<GiocatoreAnalisiRow, "id" | "stagione" | "creazione_dt">> = {
       fascia_id:
         patch.fascia_id !== undefined ? patch.fascia_id : g.fascia_id ?? null,
       obiettivo:
         patch.obiettivo !== undefined
           ? patch.obiettivo
           : g.obiettivo ?? false,
-      note: patch.note !== undefined ? patch.note : g.note ?? null,
+      note:
+        patch.note !== undefined ? patch.note : g.note ?? null,
     };
 
     setAnalisiOverrides((prev) => ({ ...prev, [g.id]: merged }));

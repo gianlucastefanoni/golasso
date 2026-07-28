@@ -136,7 +136,7 @@ export type GiocatoreAnalisiRow = {
   id: number;
   stagione: number;
   creazione_dt?: string;
-  fascia_id?: number;
-  obiettivo?: boolean;
-  note?: string;
+  fascia_id?: number | null;
+  obiettivo?: boolean | null;
+  note?: string | null;
 };
