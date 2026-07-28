@@ -1,7 +1,49 @@
 import { supabase } from "../supabase/supabaseClient";
-import { StatisticheGiocatore, GiocatoreRow } from "../types/GiocatoreTypes";
+import {
+  StatisticheGiocatore,
+  GiocatoreRow,
+  GiocatoreAnalisiRow,
+} from "../types/GiocatoreTypes";
 
-function mapRowToGiocatore(row: GiocatoreRow): StatisticheGiocatore {
+function chiaveAnalisi(id: number, stagione: number): string {
+  return `${id}-${stagione}`;
+}
+
+// Recupera le righe di Giocatori_analisi corrispondenti alle coppie (id, stagione)
+// passate e le restituisce come mappa per un merge lato client rapido (O(1) per giocatore).
+// Se per una coppia (id, stagione) non esiste la riga, semplicemente non comparirà
+// nella mappa: chi la consulta userà valori null/undefined di default.
+async function getAnalisiMap(
+  righe: { id: number; stagione: number }[],
+): Promise<Map<string, GiocatoreAnalisiRow>> {
+  if (righe.length === 0) return new Map();
+
+  const ids = Array.from(new Set(righe.map(r => r.id)));
+  const stagioni = Array.from(new Set(righe.map(r => r.stagione)));
+
+  const { data, error } = await supabase
+    .from("Giocatori_analisi")
+    .select("id, stagione, creazione_dt, fascia_id, obiettivo, note")
+    .in("id", ids)
+    .in("stagione", stagioni);
+
+  if (error) {
+    console.error("Errore nel recuperare Giocatori_analisi:", error);
+    throw error;
+  }
+
+  const map = new Map<string, GiocatoreAnalisiRow>();
+  (data ?? []).forEach((row: GiocatoreAnalisiRow) => {
+    map.set(chiaveAnalisi(row.id, row.stagione), row);
+  });
+
+  return map;
+}
+
+function mapRowToGiocatore(
+  row: GiocatoreRow,
+  analisi?: GiocatoreAnalisiRow,
+): StatisticheGiocatore {
   return {
     id: row.id,
     stagione: row.stagione,
@@ -35,6 +77,10 @@ function mapRowToGiocatore(row: GiocatoreRow): StatisticheGiocatore {
     costo: row.costo,
     costo_prev: row.costo_prev,
     fl: row.fl ?? false,
+    // --- dati da Giocatori_analisi (left join lato client) ---
+    fascia_id: analisi?.fascia_id ?? null,
+    obiettivo: analisi?.obiettivo ?? null,
+    note: analisi?.note ?? null,
   };
 }
 
@@ -61,8 +107,13 @@ export async function getAllGiocatori(
     throw error;
   }
 
-  return (data ?? []).map((row: any) =>
-    mapRowToGiocatore(row as unknown as GiocatoreRow),
+  const rows = (data ?? []) as unknown as GiocatoreRow[];
+  const analisiMap = await getAnalisiMap(
+    rows.map(r => ({ id: r.id, stagione: r.stagione })),
+  );
+
+  return rows.map(row =>
+    mapRowToGiocatore(row, analisiMap.get(chiaveAnalisi(row.id, row.stagione))),
   );
 }
 
@@ -90,10 +141,17 @@ export async function getAllGiocatoriSenzaJoinFanta(
     (fantaRes.data ?? []).map((f: any) => [f.id, f.nome ?? ""]),
   );
 
-  return (giocatoriRes.data ?? []).map((row: any) => {
-    const mapped = mapRowToGiocatore(row as unknown as GiocatoreRow);
-    mapped.FantaSquadra =
-      (fantaMap.get(mapped.id_fanta_squadra) as string) ?? "";
+  const rows = (giocatoriRes.data ?? []) as unknown as GiocatoreRow[];
+  const analisiMap = await getAnalisiMap(
+    rows.map(r => ({ id: r.id, stagione: r.stagione })),
+  );
+
+  return rows.map(row => {
+    const mapped = mapRowToGiocatore(
+      row,
+      analisiMap.get(chiaveAnalisi(row.id, row.stagione)),
+    );
+    mapped.FantaSquadra = (fantaMap.get(mapped.id_fanta_squadra) as string) ?? "";
     return mapped;
   });
 }
@@ -170,8 +228,13 @@ export async function getStoricoGiocatore(
     throw error;
   }
 
-  return (data ?? []).map((row: any) =>
-    mapRowToGiocatore(row as unknown as GiocatoreRow),
+  const rows = (data ?? []) as unknown as GiocatoreRow[];
+  const analisiMap = await getAnalisiMap(
+    rows.map(r => ({ id: r.id, stagione: r.stagione })),
+  );
+
+  return rows.map(row =>
+    mapRowToGiocatore(row, analisiMap.get(chiaveAnalisi(row.id, row.stagione))),
   );
 }
 

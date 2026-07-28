@@ -117,6 +117,9 @@ export type GiocatoreRow = {
   // presenti solo se richiesti con la join nella select
   Squadre?: { nome: string | null } | null;
   Fanta_squadre?: { nome: string | null } | null;
+  fascia_id?: number | null;
+  obiettivo?: boolean | null;
+  note?: string | null;
 };
 
 export type FasciaRow = {
@@ -124,4 +127,13 @@ export type FasciaRow = {
   created_at?: string;
   nome: string | null;
   colore: string | null;
+};
+
+export type GiocatoreAnalisiRow = {
+  id: number;
+  stagione: number;
+  creazione_dt?: string;
+  fascia_id?: number;
+  obiettivo?: boolean;
+  note?: string;
 };

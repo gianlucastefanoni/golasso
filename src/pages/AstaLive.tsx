@@ -3,10 +3,12 @@ import { Header } from "../components/Header";
 import { getAllAste, getAllStagioni, Asta } from "../api/astaApi";
 import { getAllFantaSquadre } from "../api/fantaSquadreApi";
 import { getAllGiocatori } from "../api/giocatoriApi";
+import { getAllFasce } from "../api/fasceApi";
 import {
   StatisticheGiocatore,
   FantaSquadra,
   Ruolo,
+  FasciaRow
 } from "../types/GiocatoreTypes";
 import { SelezioneAsta } from "../components/AstaLive/SelezioneAsta";
 import {
@@ -21,6 +23,7 @@ const DEFAULT_SLOT_CONFIG: SlotConfig = { P: 3, D: 8, C: 8, A: 6 };
 export const AstaLive = () => {
   const [aste, setAste] = useState<Asta[]>([]);
   const [stagioniDisponibili, setStagioniDisponibili] = useState<number[]>([]);
+  const [fasce, setFasce] = useState<FasciaRow[]>([])
   const [loadingAste, setLoadingAste] = useState(true);
   const [selectedAstaId, setSelectedAstaId] = useState<number | null>(null);
 
@@ -35,11 +38,12 @@ export const AstaLive = () => {
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
 
   useEffect(() => {
-    Promise.all([getAllAste(), getAllFantaSquadre(), getAllStagioni()])
-      .then(([asteList, teamsList, stagioniList]) => {
+    Promise.all([getAllAste(), getAllFantaSquadre(), getAllStagioni(), getAllFasce()])
+      .then(([asteList, teamsList, stagioniList, fasceList]) => {
         setAste(asteList);
         setFantaSquadre(teamsList);
         setStagioniDisponibili(stagioniList);
+        setFasce(fasceList)
         if (asteList.length > 0) setSelectedAstaId(asteList[0].id);
       })
       .catch((err) =>
@@ -169,6 +173,7 @@ export const AstaLive = () => {
                 stagionePrecedente={stagionePrecedente}
                 fantaSquadre={fantaSquadre}
                 onAssegnato={handleAssegnato}
+                fasce={fasce}
               />
             )}
           </>
