@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { StatisticheGiocatore, FantaSquadra } from "../../types/GiocatoreTypes";
-import { FasciaRow } from "../../api/fasciaApi";
+import { FasciaRow } from "../../api/fasceApi";
 import { RuoloBadge } from "../Home/RuoloBadge";
 import {
   getFmColor,
@@ -347,7 +347,7 @@ export const ListaGiocatoriAsta = ({
     g: StatisticheGiocatore,
     patch: AnalisiOverride,
   ) => {
-    const merged: Required<AnalisiOverride> = {
+    const merged: Required<GiocatoreAnalisiRow> = {
       fascia_id:
         patch.fascia_id !== undefined ? patch.fascia_id : g.fascia_id ?? null,
       obiettivo:
