@@ -73,7 +73,7 @@ interface Props {
     stagione: number,
     idFantaSquadra: number | null,
     costo: number | null,
-    costoPrev: number | null
+    costoPrev: number | null,
   ) => void;
 }
 
@@ -120,12 +120,12 @@ export const ListaGiocatoriAsta = ({
           note: override.note !== undefined ? override.note : g.note,
         };
       }),
-    [giocatori, analisiOverrides]
+    [giocatori, analisiOverrides],
   );
 
   const fasceOrdinate = useMemo(
     () => fasce.slice().sort((a, b) => a.id - b.id),
-    [fasce]
+    [fasce],
   );
 
   const percentualiDiffPerRuolo = useMemo<Record<RuoloAsta, number>>(() => {
@@ -162,14 +162,14 @@ export const ListaGiocatoriAsta = ({
   const opzioniSquadre = useMemo(
     () =>
       Array.from(new Set(effettivi.map((g) => g.squadra).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b)
+        (a, b) => a.localeCompare(b),
       ),
-    [effettivi]
+    [effettivi],
   );
 
   const opzioniFantaSquadre = useMemo(
     () => fantaSquadre.slice().sort((a, b) => a.nome.localeCompare(b.nome)),
-    [fantaSquadre]
+    [fantaSquadre],
   );
 
   const calcolaAdjusted = (ruolo: string, costoPrev: number | null) => {
@@ -204,7 +204,7 @@ export const ListaGiocatoriAsta = ({
         return isValidNumber(adjusted) ? adjusted : -1;
       }
       default:
-        return g.costo_prev;
+        return isValidNumber(g.costo_prev) ? g.costo_prev : -1;
     }
   };
 
@@ -260,7 +260,7 @@ export const ListaGiocatoriAsta = ({
 
     const idFasceNote = new Set(fasceOrdinate.map((f) => f.id));
     const senzaFascia = candidati.filter(
-      (g) => g.fascia_id == null || !idFasceNote.has(g.fascia_id)
+      (g) => g.fascia_id == null || !idFasceNote.has(g.fascia_id),
     );
     if (senzaFascia.length > 0) {
       risultato.push({ fascia: null, giocatori: ordina(senzaFascia) });
@@ -282,7 +282,7 @@ export const ListaGiocatoriAsta = ({
 
   const totaleRisultati = gruppi.reduce(
     (acc, g) => acc + g.giocatori.length,
-    0
+    0,
   );
 
   const getBozza = (g: StatisticheGiocatore) =>
@@ -294,7 +294,7 @@ export const ListaGiocatoriAsta = ({
 
   const setBozza = (
     g: StatisticheGiocatore,
-    patch: Partial<BozzaGiocatore>
+    patch: Partial<BozzaGiocatore>,
   ) => {
     setBozze((prev) => ({
       ...prev,
@@ -304,7 +304,7 @@ export const ListaGiocatoriAsta = ({
 
   const handleSalva = async (
     g: StatisticheGiocatore,
-    patch?: Partial<BozzaGiocatore>
+    patch?: Partial<BozzaGiocatore>,
   ) => {
     const bozza = patch ? { ...getBozza(g), ...patch } : getBozza(g);
     const idFantaSquadra = bozza.idFantaSquadra
@@ -326,7 +326,7 @@ export const ListaGiocatoriAsta = ({
         g.stagione,
         idFantaSquadra,
         costo,
-        costoPrev
+        costoPrev,
       );
       onAssegnato(g.id, g.stagione, idFantaSquadra, costo, costoPrev);
     } catch (err) {
@@ -344,16 +344,18 @@ export const ListaGiocatoriAsta = ({
   // così un upsert non "cancella" involontariamente gli altri due se non toccati.
   const persistiAnalisi = async (
     g: StatisticheGiocatore,
-    patch: AnalisiOverride
+    patch: AnalisiOverride,
   ) => {
     const merged: Partial<
       Omit<GiocatoreAnalisiRow, "id" | "stagione" | "creazione_dt">
     > = {
       fascia_id:
-        patch.fascia_id !== undefined ? patch.fascia_id : g.fascia_id ?? null,
+        patch.fascia_id !== undefined ? patch.fascia_id : (g.fascia_id ?? null),
       obiettivo:
-        patch.obiettivo !== undefined ? patch.obiettivo : g.obiettivo ?? false,
-      note: patch.note !== undefined ? patch.note : g.note ?? null,
+        patch.obiettivo !== undefined
+          ? patch.obiettivo
+          : (g.obiettivo ?? false),
+      note: patch.note !== undefined ? patch.note : (g.note ?? null),
     };
 
     setAnalisiOverrides((prev) => ({ ...prev, [g.id]: merged }));
@@ -386,7 +388,8 @@ export const ListaGiocatoriAsta = ({
   const salvaNoteModale = async () => {
     if (!noteModal) return;
     const giocatore = effettivi.find(
-      (g) => g.id === noteModal.giocatoreId && g.stagione === noteModal.stagione
+      (g) =>
+        g.id === noteModal.giocatoreId && g.stagione === noteModal.stagione,
     );
     if (!giocatore) {
       setNoteModal(null);
@@ -560,7 +563,7 @@ export const ListaGiocatoriAsta = ({
                   const costoPrevBozza = parseNumberInput(bozza.costoPrev);
                   const adjustedPrev = calcolaAdjusted(
                     g.r,
-                    costoPrevBozza ?? g.costo_prev ?? null
+                    costoPrevBozza ?? g.costo_prev ?? null,
                   );
                   const haNote = Boolean(g.note && g.note.trim() !== "");
 
@@ -627,7 +630,7 @@ export const ListaGiocatoriAsta = ({
                         <button
                           type="button"
                           onClick={() => apriModaleNote(g)}
-                          title={haNote ? g.note ?? "" : "Aggiungi una nota"}
+                          title={haNote ? (g.note ?? "") : "Aggiungi una nota"}
                           className="inline-flex items-center justify-center hover:scale-110 transition-transform"
                         >
                           <MessageSquareText
@@ -649,7 +652,7 @@ export const ListaGiocatoriAsta = ({
                           className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-emerald-500 min-w-[130px] disabled:opacity-60"
                         >
                           <option value="">— Non assegnato —</option>
-                          {fantaSquadre.map((f) => (
+                          {opzioniFantaSquadre.map((f) => (
                             <option key={f.id} value={f.id}>
                               {f.nome}
                             </option>
@@ -841,7 +844,7 @@ export const ListaGiocatoriAsta = ({
               value={noteModal.testo}
               onChange={(e) =>
                 setNoteModal((prev) =>
-                  prev ? { ...prev, testo: e.target.value } : prev
+                  prev ? { ...prev, testo: e.target.value } : prev,
                 )
               }
               rows={5}
