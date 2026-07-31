@@ -205,7 +205,7 @@ export const GiocatoreDettaglio = () => {
                       {s.costo !== null && s.costo !== undefined
                         ? `${s.costo}/${s.astaBudget ?? "-"}cr`
                         : s.astaBudget !== null
-                          ? `${s.astaBudget}cr`
+                          ? `-/${s.astaBudget}cr`
                           : "-"}
                     </td>
 
