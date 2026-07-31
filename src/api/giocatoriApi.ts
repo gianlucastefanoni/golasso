@@ -18,8 +18,8 @@ async function getAnalisiMap(
 ): Promise<Map<string, GiocatoreAnalisiRow>> {
   if (righe.length === 0) return new Map();
 
-  const ids = Array.from(new Set(righe.map(r => r.id)));
-  const stagioni = Array.from(new Set(righe.map(r => r.stagione)));
+  const ids = Array.from(new Set(righe.map((r) => r.id)));
+  const stagioni = Array.from(new Set(righe.map((r) => r.stagione)));
 
   const { data, error } = await supabase
     .from("Giocatori_analisi")
@@ -89,30 +89,52 @@ function mapRowToGiocatore(
 export async function getAllGiocatori(
   stagione?: number,
 ): Promise<StatisticheGiocatore[]> {
-  let query = supabase.from("Giocatori").select(`
+  const PAGE_SIZE = 1000;
+  const selectQuery = `
       id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
       rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, costo_prev, fl, 
       Squadre ( nome ),
       Fanta_squadre ( nome )
-    `);
+    `;
 
-  if (stagione !== undefined) {
-    query = query.eq("stagione", stagione);
+  let allRows: any[] = [];
+  let from = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = supabase
+      .from("Giocatori")
+      .select(selectQuery)
+      .order("id", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (stagione !== undefined) {
+      query = query.eq("stagione", stagione);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("Errore nel recuperare i giocatori:", error);
+      throw error;
+    }
+
+    const page = data ?? [];
+    allRows = allRows.concat(page);
+
+    if (page.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      from += PAGE_SIZE;
+    }
   }
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Errore nel recuperare i giocatori:", error);
-    throw error;
-  }
-
-  const rows = (data ?? []) as unknown as GiocatoreRow[];
+  const rows = allRows as unknown as GiocatoreRow[];
   const analisiMap = await getAnalisiMap(
-    rows.map(r => ({ id: r.id, stagione: r.stagione })),
+    rows.map((r) => ({ id: r.id, stagione: r.stagione })),
   );
 
-  return rows.map(row =>
+  return rows.map((row) =>
     mapRowToGiocatore(row, analisiMap.get(chiaveAnalisi(row.id, row.stagione))),
   );
 }
@@ -121,37 +143,61 @@ export async function getAllGiocatori(
 export async function getAllGiocatoriSenzaJoinFanta(
   stagione?: number,
 ): Promise<StatisticheGiocatore[]> {
-  let query = supabase.from("Giocatori").select(`
+  const PAGE_SIZE = 1000;
+  const selectQuery = `
       id, stagione, creazione_dt, nome, id_squadra, r, rm, pv, mv, fm, gf, gs,
       rp, rc, rf, rs, ass, amm, esp, au, id_fanta_squadra, id_asta, costo, costo_prev,
       Squadre ( nome )
-    `);
+    `;
 
-  if (stagione !== undefined) query = query.eq("stagione", stagione);
+  let allRows: any[] = [];
+  let from = 0;
+  let hasMore = true;
 
-  const [giocatoriRes, fantaRes] = await Promise.all([
-    query,
+  while (hasMore) {
+    let query = supabase
+      .from("Giocatori")
+      .select(selectQuery)
+      .order("id", { ascending: true })
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (stagione !== undefined) query = query.eq("stagione", stagione);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const page = data ?? [];
+    allRows = allRows.concat(page);
+
+    if (page.length < PAGE_SIZE) {
+      hasMore = false;
+    } else {
+      from += PAGE_SIZE;
+    }
+  }
+
+  const [fantaRes] = await Promise.all([
     supabase.from("Fanta_squadre").select("id, nome"),
   ]);
 
-  if (giocatoriRes.error) throw giocatoriRes.error;
   if (fantaRes.error) throw fantaRes.error;
 
   const fantaMap = new Map(
     (fantaRes.data ?? []).map((f: any) => [f.id, f.nome ?? ""]),
   );
 
-  const rows = (giocatoriRes.data ?? []) as unknown as GiocatoreRow[];
+  const rows = allRows as unknown as GiocatoreRow[];
   const analisiMap = await getAnalisiMap(
-    rows.map(r => ({ id: r.id, stagione: r.stagione })),
+    rows.map((r) => ({ id: r.id, stagione: r.stagione })),
   );
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const mapped = mapRowToGiocatore(
       row,
       analisiMap.get(chiaveAnalisi(row.id, row.stagione)),
     );
-    mapped.FantaSquadra = (fantaMap.get(mapped.id_fanta_squadra) as string) ?? "";
+    mapped.FantaSquadra =
+      (fantaMap.get(mapped.id_fanta_squadra) as string) ?? "";
     return mapped;
   });
 }
@@ -159,7 +205,6 @@ export async function getAllGiocatoriSenzaJoinFanta(
 export async function addStatisticheFromData(
   statisticheData: StatisticheGiocatore[],
 ): Promise<void> {
-
   const rows = statisticheData.map((s) => ({
     id: s.id,
     stagione: s.stagione,
@@ -187,20 +232,12 @@ export async function addStatisticheFromData(
     fl: s.fl,
   }));
 
-
-  const { error } = await supabase.rpc(
-    "upsert_statistiche_giocatori",
-    {
-      giocatori: rows
-    }
-  );
-
+  const { error } = await supabase.rpc("upsert_statistiche_giocatori", {
+    giocatori: rows,
+  });
 
   if (error) {
-    console.error(
-      "Errore durante sincronizzazione statistiche:",
-      error
-    );
+    console.error("Errore durante sincronizzazione statistiche:", error);
     throw error;
   }
 
@@ -230,10 +267,10 @@ export async function getStoricoGiocatore(
 
   const rows = (data ?? []) as unknown as GiocatoreRow[];
   const analisiMap = await getAnalisiMap(
-    rows.map(r => ({ id: r.id, stagione: r.stagione })),
+    rows.map((r) => ({ id: r.id, stagione: r.stagione })),
   );
 
-  return rows.map(row =>
+  return rows.map((row) =>
     mapRowToGiocatore(row, analisiMap.get(chiaveAnalisi(row.id, row.stagione))),
   );
 }

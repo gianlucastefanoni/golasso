@@ -30,30 +30,31 @@ export const Header = () => {
               Giocatori
             </Link>
 
-            <Link to="/fantasquadra" className="hover:text-emerald-400">
-              FantaSquadra
-            </Link>
-
-            <Link to="/rosaottimale" className="hover:text-emerald-400">
-              Rosa ottimale
-            </Link>
             {isAdmin && (
-              <Link
-                to="/nuova-configurazione"
-                className="hover:text-emerald-400"
-              >
-                Nuova configurazione
-              </Link>
-            )}
+              <>
+                <Link to="/fantasquadra" className="hover:text-emerald-400">
+                  FantaSquadra
+                </Link>
 
-            <Link to="/asta-live" className="hover:text-emerald-400">
-              Asta live
-            </Link>
+                <Link to="/rosaottimale" className="hover:text-emerald-400">
+                  Rosa ottimale
+                </Link>
 
-            {isAdmin && (
-              <Link to="/gestione-ruoli" className="hover:text-emerald-400">
-                Utenti
-              </Link>
+                <Link
+                  to="/nuova-configurazione"
+                  className="hover:text-emerald-400"
+                >
+                  Nuova configurazione
+                </Link>
+
+                <Link to="/asta-live" className="hover:text-emerald-400">
+                  Asta live
+                </Link>
+
+                <Link to="/gestione-ruoli" className="hover:text-emerald-400">
+                  Utenti
+                </Link>
+              </>
             )}
           </nav>
 
@@ -80,48 +81,48 @@ export const Header = () => {
               Giocatori
             </Link>
 
-            <Link
-              to="/fantasquadra"
-              onClick={closeMenu}
-              className="px-4 py-3 text-gray-300 hover:bg-gray-800"
-            >
-              FantaSquadra
-            </Link>
-
-            <Link
-              to="/rosaottimale"
-              onClick={closeMenu}
-              className="px-4 py-3 text-gray-300 hover:bg-gray-800"
-            >
-              Rosa ottimale
-            </Link>
-
             {isAdmin && (
-              <Link
-                to="/nuova-configurazione"
-                onClick={closeMenu}
-                className="px-4 py-3 text-gray-300 hover:bg-gray-800"
-              >
-                Nuova configurazione
-              </Link>
-            )}
+              <>
+                <Link
+                  to="/fantasquadra"
+                  onClick={closeMenu}
+                  className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+                >
+                  FantaSquadra
+                </Link>
 
-            <Link
-              to="/asta-live"
-              onClick={closeMenu}
-              className="px-4 py-3 text-gray-300 hover:bg-gray-800"
-            >
-              Asta live
-            </Link>
+                <Link
+                  to="/rosaottimale"
+                  onClick={closeMenu}
+                  className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+                >
+                  Rosa ottimale
+                </Link>
 
-            {isAdmin && (
-              <Link
-                to="/gestione-ruoli"
-                onClick={closeMenu}
-                className="px-4 py-3 text-gray-300 hover:bg-gray-800"
-              >
-                Utenti
-              </Link>
+                <Link
+                  to="/nuova-configurazione"
+                  onClick={closeMenu}
+                  className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+                >
+                  Nuova configurazione
+                </Link>
+
+                <Link
+                  to="/asta-live"
+                  onClick={closeMenu}
+                  className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+                >
+                  Asta live
+                </Link>
+
+                <Link
+                  to="/gestione-ruoli"
+                  onClick={closeMenu}
+                  className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+                >
+                  Utenti
+                </Link>
+              </>
             )}
 
             <div className="border-t border-gray-800 mt-2 pt-2 px-4">

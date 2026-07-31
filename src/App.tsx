@@ -77,7 +77,7 @@ export default function App() {
         <Route
           path="/fantasquadra"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
               <FantaSquadraDetail />
             </ProtectedRoute>
           }
@@ -86,7 +86,7 @@ export default function App() {
         <Route
           path="/rosaottimale"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
               <RosaOttimaleDetail />
             </ProtectedRoute>
           }
@@ -103,7 +103,7 @@ export default function App() {
         <Route
           path="/nuova-configurazione"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
               <NuovaConfigurazione />
             </ProtectedRoute>
           }
@@ -113,7 +113,7 @@ export default function App() {
         <Route
           path="/statistiche-er"
           element={
-            <ProtectedRoute requiredRole={UserProfile.Scrittore}>
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
               <StatisticheERPage />
             </ProtectedRoute>
           }
@@ -132,7 +132,7 @@ export default function App() {
         <Route
           path="/asta-live"
           element={
-            <ProtectedRoute requiredRole={UserProfile.Scrittore}>
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
               <AstaLive />
             </ProtectedRoute>
           }
