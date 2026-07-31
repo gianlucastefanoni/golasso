@@ -228,7 +228,7 @@ export const Home = () => {
 
             {/* Un solo contenitore per scroll orizzontale + verticale: intestazione e righe si muovono sempre insieme */}
             <div className="flex-1 overflow-auto custom-scrollbar">
-              <div className="min-w-[420px]">
+              <div className="min-w-[520px]">
                 <IntestazioniGiocatori
                   sortConfig={sortConfig}
                   onSortClick={onHeaderClick}

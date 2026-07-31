@@ -11,9 +11,11 @@ export const GiocatoreCard = ({ giocatore }: Props) => {
   const [open, setOpen] = useState(false);
 
   return (
-    <div 
-      className={`group bg-gray-800/50 rounded-xl border transition-all duration-200 ${
-        open ? "border-emerald-500 shadow-lg shadow-emerald-900/20" : "border-gray-700 hover:border-gray-500 shadow-md"
+    <div
+      className={`group w-full bg-gray-800/50 rounded-xl border transition-all duration-200 ${
+        open
+          ? "border-emerald-500 shadow-lg shadow-emerald-900/20"
+          : "border-gray-700 hover:border-gray-500 shadow-md"
       }`}
       onClick={() => setOpen(!open)}
     >
