@@ -226,6 +226,16 @@ export const Home = () => {
               </div>
             )}
 
+            <div className="lg:hidden px-3 pt-3 md:px-4 md:pt-4">
+              <button
+                onClick={() => setShowFilters(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-700 bg-gray-800/70 px-4 py-2 text-sm font-bold uppercase tracking-wide text-white transition-all hover:bg-gray-700"
+              >
+                <Filter className="w-4 h-4 text-emerald-400" />
+                Filtri
+              </button>
+            </div>
+
             {/* Un solo contenitore per scroll orizzontale + verticale: intestazione e righe si muovono sempre insieme */}
             <div className="flex-1 overflow-auto custom-scrollbar">
               <div className="min-w-[520px]">
@@ -244,7 +254,7 @@ export const Home = () => {
                     ))
                   ) : !loading ? (
                     <div className="h-full flex flex-col items-center justify-center text-gray-600 italic py-20">
-                      <p>Nessun giocatore corrisponde ai filtri</p>
+                      <p>Nessun giocatore trovato, modificare i filtri</p>
                       <button
                         onClick={handleResetFilters}
                         className="text-emerald-500 underline mt-2"
@@ -259,13 +269,6 @@ export const Home = () => {
           </div>
         </div>
       </main>
-
-      <button
-        onClick={() => setShowFilters(true)}
-        className="fixed bottom-6 right-6 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl w-14 h-14 flex items-center justify-center shadow-2xl shadow-emerald-900/40 lg:hidden transition-transform active:scale-90 z-40"
-      >
-        <Filter className="w-6 h-6" />
-      </button>
 
       {showFilters && (
         <div className="fixed inset-0 z-[60] flex lg:hidden">
