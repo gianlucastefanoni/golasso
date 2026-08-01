@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   StatisticheGiocatore,
   FantaSquadra,
@@ -541,7 +541,7 @@ export const ListaGiocatoriAsta = ({
           </thead>
           <tbody>
             {gruppi.map(({ fascia, giocatori: giocatoriFascia }) => (
-              <>
+              <Fragment key={`gruppo-${fascia?.id ?? "none"}`}>
                 <tr key={`fascia-${fascia?.id ?? "none"}`}>
                   <td
                     colSpan={TOTALE_COLONNE}
@@ -806,7 +806,7 @@ export const ListaGiocatoriAsta = ({
                     </tr>
                   );
                 })}
-              </>
+              </Fragment>
             ))}
 
             {totaleRisultati === 0 && (

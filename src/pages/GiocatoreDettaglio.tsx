@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getStoricoGiocatore } from "../api/giocatoriApi";
 import { getAllAste } from "../api/astaApi";
@@ -13,6 +13,19 @@ import {
 
 type StoricoGiocatoreConAsta = StatisticheGiocatore & {
   astaBudget: number | null;
+};
+
+const formatDelta = (value: number, decimals = 2) => {
+  if (value === 0) return "0";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(decimals)}`;
+};
+
+const getDeltaTone = (value: number) => {
+  if (value > 0)
+    return "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
+  if (value < 0) return "text-red-400 border-red-500/30 bg-red-500/10";
+  return "text-gray-300 border-gray-700 bg-gray-800/60";
 };
 
 export const GiocatoreDettaglio = () => {
@@ -82,6 +95,20 @@ export const GiocatoreDettaglio = () => {
     };
   }, [id]);
 
+  const storicoOrdinato = useMemo(
+    () => [...storico].sort((a, b) => Number(b.stagione) - Number(a.stagione)),
+    [storico],
+  );
+
+  const ultimaStagione = storicoOrdinato[0];
+  const penultimaStagione = storicoOrdinato[1] ?? null;
+
+  const deltaPrincipali = {
+    pv: penultimaStagione ? ultimaStagione.pv - penultimaStagione.pv : 0,
+    mv: penultimaStagione ? ultimaStagione.mv - penultimaStagione.mv : 0,
+    fm: penultimaStagione ? ultimaStagione.fm - penultimaStagione.fm : 0,
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -135,8 +162,226 @@ export const GiocatoreDettaglio = () => {
             ← Indietro
           </button>
         </div>
-        {/* TABELLA */}
-        <section className="bg-gray-900/60 rounded-3xl border border-gray-800 p-6 backdrop-blur-md">
+        {/* MOBILE: vista trend-first */}
+        <section className="md:hidden space-y-4">
+          <div className="bg-gray-900/60 rounded-2xl border border-gray-800 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                  Ultima stagione
+                </p>
+                <p className="text-xl font-black uppercase tracking-tight">
+                  {ultimaStagione.stagione}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-gray-400 font-bold uppercase">
+                  {ultimaStagione.squadra}
+                </p>
+                <p className="text-[11px] text-gray-500 font-semibold uppercase">
+                  {ultimaStagione.FantaSquadra || "-"}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-2 text-center">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                  Pv
+                </p>
+                <p
+                  className={`text-base font-black ${getPvColor(ultimaStagione.pv)}`}
+                >
+                  {ultimaStagione.pv}
+                </p>
+                <p
+                  className={`mt-1 text-[10px] font-bold border rounded-full px-2 py-0.5 inline-block ${getDeltaTone(deltaPrincipali.pv)}`}
+                >
+                  {formatDelta(deltaPrincipali.pv, 0)}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-2 text-center">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                  Mv
+                </p>
+                <p
+                  className={`text-base font-black ${getMvColor(ultimaStagione.mv)}`}
+                >
+                  {ultimaStagione.mv.toFixed(2)}
+                </p>
+                <p
+                  className={`mt-1 text-[10px] font-bold border rounded-full px-2 py-0.5 inline-block ${getDeltaTone(deltaPrincipali.mv)}`}
+                >
+                  {formatDelta(deltaPrincipali.mv)}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-2 text-center">
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                  Fm
+                </p>
+                <p
+                  className={`text-base font-black ${getFmColor(ultimaStagione.fm)}`}
+                >
+                  {ultimaStagione.fm.toFixed(2)}
+                </p>
+                <p
+                  className={`mt-1 text-[10px] font-bold border rounded-full px-2 py-0.5 inline-block ${getDeltaTone(deltaPrincipali.fm)}`}
+                >
+                  {formatDelta(deltaPrincipali.fm)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {storicoOrdinato.map((s, index) => {
+              const stagionePrecedente = storicoOrdinato[index + 1] ?? null;
+              const deltaPv = stagionePrecedente
+                ? s.pv - stagionePrecedente.pv
+                : 0;
+              const deltaMv = stagionePrecedente
+                ? s.mv - stagionePrecedente.mv
+                : 0;
+              const deltaFm = stagionePrecedente
+                ? s.fm - stagionePrecedente.fm
+                : 0;
+
+              return (
+                <article
+                  key={`${s.stagione}-${s.id_asta ?? "na"}`}
+                  className="bg-gray-900/60 rounded-2xl border border-gray-800 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                        Stagione
+                      </p>
+                      <p className="text-lg font-black">{s.stagione}</p>
+                    </div>
+                    <RuoloBadge ruolo={s.r} />
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-2 text-xs font-bold uppercase">
+                    <span className="bg-gray-800 px-2 py-1 rounded-lg text-gray-300">
+                      {s.squadra}
+                    </span>
+                    <span className="text-gray-600">/</span>
+                    <span className="bg-gray-800 px-2 py-1 rounded-lg text-gray-300">
+                      {s.FantaSquadra || "-"}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-3 gap-2">
+                    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                        Pv
+                      </p>
+                      <p className={`text-base font-black ${getPvColor(s.pv)}`}>
+                        {s.pv}
+                      </p>
+                      <p
+                        className={`mt-1 text-[10px] font-bold border rounded-full px-2 py-0.5 inline-block ${getDeltaTone(deltaPv)}`}
+                      >
+                        {formatDelta(deltaPv, 0)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                        Mv
+                      </p>
+                      <p className={`text-base font-black ${getMvColor(s.mv)}`}>
+                        {s.mv.toFixed(2)}
+                      </p>
+                      <p
+                        className={`mt-1 text-[10px] font-bold border rounded-full px-2 py-0.5 inline-block ${getDeltaTone(deltaMv)}`}
+                      >
+                        {formatDelta(deltaMv)}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-800 bg-gray-900/60 p-2 text-center">
+                      <p className="text-[10px] uppercase tracking-widest text-gray-500 font-black">
+                        Fm
+                      </p>
+                      <p className={`text-base font-black ${getFmColor(s.fm)}`}>
+                        {s.fm.toFixed(2)}
+                      </p>
+                      <p
+                        className={`mt-1 text-[10px] font-bold border rounded-full px-2 py-0.5 inline-block ${getDeltaTone(deltaFm)}`}
+                      >
+                        {formatDelta(deltaFm)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-3 gap-2 text-[11px]">
+                    <div className="bg-gray-800/40 border border-gray-800 rounded-lg p-2 text-center">
+                      <p className="uppercase tracking-wider text-gray-500 font-bold">
+                        Gf
+                      </p>
+                      <p className="font-black text-white mt-1">{s.gf}</p>
+                    </div>
+                    <div className="bg-gray-800/40 border border-gray-800 rounded-lg p-2 text-center">
+                      <p className="uppercase tracking-wider text-gray-500 font-bold">
+                        Ass
+                      </p>
+                      <p className="font-black text-white mt-1">{s.ass}</p>
+                    </div>
+                    <div className="bg-gray-800/40 border border-gray-800 rounded-lg p-2 text-center">
+                      <p className="uppercase tracking-wider text-gray-500 font-bold">
+                        Costo
+                      </p>
+                      <p className="font-black text-white mt-1">
+                        {s.costo !== null && s.costo !== undefined
+                          ? `${s.costo}/${s.astaBudget ?? "-"}cr`
+                          : s.astaBudget !== null
+                            ? `-/${s.astaBudget}cr`
+                            : "-"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 grid grid-cols-5 gap-1 text-[10px] text-center">
+                    <div className="bg-gray-800/30 rounded-md p-1.5">
+                      <p className="text-gray-500 uppercase font-bold">
+                        {s.r === "P" ? "Gs" : "Rf"}
+                      </p>
+                      <p className="text-white font-black mt-0.5">
+                        {s.r === "P" ? s.gs : s.rf}
+                      </p>
+                    </div>
+                    <div className="bg-gray-800/30 rounded-md p-1.5">
+                      <p className="text-gray-500 uppercase font-bold">
+                        {s.r === "P" ? "Rp" : "Rs"}
+                      </p>
+                      <p className="text-white font-black mt-0.5">
+                        {s.r === "P" ? s.rp : s.rs}
+                      </p>
+                    </div>
+                    <div className="bg-gray-800/30 rounded-md p-1.5">
+                      <p className="text-gray-500 uppercase font-bold">Amm</p>
+                      <p className="text-white font-black mt-0.5">{s.amm}</p>
+                    </div>
+                    <div className="bg-gray-800/30 rounded-md p-1.5">
+                      <p className="text-gray-500 uppercase font-bold">Esp</p>
+                      <p className="text-white font-black mt-0.5">{s.esp}</p>
+                    </div>
+                    <div className="bg-gray-800/30 rounded-md p-1.5">
+                      <p className="text-gray-500 uppercase font-bold">Aut</p>
+                      <p className="text-white font-black mt-0.5">{s.au}</p>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* DESKTOP: tabella completa */}
+        <section className="hidden md:block bg-gray-900/60 rounded-3xl border border-gray-800 p-6 backdrop-blur-md">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -152,8 +397,8 @@ export const GiocatoreDettaglio = () => {
                     "Gf",
                     "Ass",
                     "Costo",
-                    storico[0].r === "P" ? "Gs" : "Rf",
-                    storico[0].r === "P" ? "Rp" : "Rs",
+                    storicoOrdinato[0].r === "P" ? "Gs" : "Rf",
+                    storicoOrdinato[0].r === "P" ? "Rp" : "Rs",
                     "Amm",
                     "Esp",
                     "Aut",
@@ -168,9 +413,9 @@ export const GiocatoreDettaglio = () => {
                 </tr>
               </thead>
               <tbody>
-                {storico.map((s) => (
+                {storicoOrdinato.map((s) => (
                   <tr
-                    key={s.stagione}
+                    key={`${s.stagione}-${s.id_asta ?? "na"}`}
                     className="border-b border-gray-800/50 hover:bg-gray-800/40 transition-all"
                   >
                     <td className="py-4 px-3 font-bold">{s.stagione}</td>
