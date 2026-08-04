@@ -51,6 +51,10 @@ export const Header = () => {
                   Asta live
                 </Link>
 
+                <Link to="/simula-rosa" className="hover:text-emerald-400">
+                  Simula rosa
+                </Link>
+
                 <Link to="/gestione-ruoli" className="hover:text-emerald-400">
                   Utenti
                 </Link>
@@ -113,6 +117,14 @@ export const Header = () => {
                   className="px-4 py-3 text-gray-300 hover:bg-gray-800"
                 >
                   Asta live
+                </Link>
+
+                <Link
+                  to="/simula-rosa"
+                  onClick={closeMenu}
+                  className="px-4 py-3 text-gray-300 hover:bg-gray-800"
+                >
+                  Simula rosa
                 </Link>
 
                 <Link

@@ -15,6 +15,7 @@ import { NuovaConfigurazione } from "./pages/NuovaConfigurazione";
 import { UserProfile } from "./types/UserTypes";
 import { FantaSquadraDetail } from "./pages/FantaSquadraDetail";
 import { AstaLive } from "./pages/AstaLive";
+import { SimulaRosa } from "./pages/SimulaRosa";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -134,6 +135,15 @@ export default function App() {
           element={
             <ProtectedRoute requiredRole={UserProfile.Admin}>
               <AstaLive />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/simula-rosa"
+          element={
+            <ProtectedRoute requiredRole={UserProfile.Admin}>
+              <SimulaRosa />
             </ProtectedRoute>
           }
         />
