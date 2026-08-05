@@ -1,12 +1,14 @@
 import { useMemo, useState } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Star } from "lucide-react";
 import { StatisticheGiocatore, Ruolo } from "../../types/GiocatoreTypes";
+import { FasciaRow } from "../../api/fasceApi";
 import { RuoloBadge } from "../Home/RuoloBadge";
 import { getFmColor, getMvColor } from "../FantaSquadra/FantaSquadraUtils";
 
 interface Props {
   giocatori: StatisticheGiocatore[];
   activeTab: Ruolo;
+  fasce: FasciaRow[];
   onSeleziona: (g: StatisticheGiocatore) => void;
 }
 
@@ -15,10 +17,16 @@ interface Props {
 export const GiocatoriDisponibili = ({
   giocatori,
   activeTab,
+  fasce,
   onSeleziona,
 }: Props) => {
   const [search, setSearch] = useState("");
   const [soloSvincolati, setSoloSvincolati] = useState(false);
+
+  const fasceById = useMemo(
+    () => new Map(fasce.map((f) => [f.id, f])),
+    [fasce],
+  );
 
   const filtrati = useMemo(() => {
     const s = search.toLowerCase().trim();
@@ -63,42 +71,66 @@ export const GiocatoriDisponibili = ({
       </div>
 
       <div className="max-h-[600px] overflow-y-auto custom-scrollbar divide-y divide-gray-800">
-        {filtrati.map((g) => (
-          <div
-            key={g.id}
-            className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/40 transition-all"
-          >
-            <RuoloBadge ruolo={g.r} />
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm truncate">{g.nome}</p>
-              <p className="text-[10px] text-gray-500 uppercase font-bold truncate">
-                {g.squadra}
-                {g.id_fanta_squadra ? ` · ${g.FantaSquadra}` : ""}
-              </p>
-            </div>
-            <div className="text-right hidden sm:block flex-shrink-0">
-              <p className={`text-xs font-bold ${getMvColor(g.mv)}`}>
-                {g.mv.toFixed(2)}
-              </p>
-              <p className={`text-xs font-black ${getFmColor(g.fm)}`}>
-                {g.fm.toFixed(2)}
-              </p>
-            </div>
-            <div className="text-right w-12 flex-shrink-0">
-              <p className="text-sm font-black text-emerald-400">
-                {g.costo_prev ?? "-"}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onSeleziona(g)}
-              aria-label={`Aggiungi ${g.nome} alla rosa simulata`}
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all flex-shrink-0"
+        {filtrati.map((g) => {
+          const fascia =
+            g.fascia_id != null ? fasceById.get(g.fascia_id) : null;
+
+          return (
+            <div
+              key={g.id}
+              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-800/40 transition-all"
             >
-              <Plus className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
+              <RuoloBadge ruolo={g.r} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="font-bold text-sm truncate">{g.nome}</p>
+
+                  {g.obiettivo && (
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                  )}
+
+                  {fascia && (
+                    <span
+                      className="px-2 py-0.5 rounded-md text-[9px] uppercase tracking-wider font-black whitespace-nowrap"
+                      style={{
+                        backgroundColor: fascia.colore ?? "#374151",
+                        color: fascia.colore ? "#FFFFFF" : "#d1d5db",
+                      }}
+                    >
+                      {fascia.nome ?? "Senza fascia"}
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-[10px] text-gray-500 uppercase font-bold truncate">
+                  {g.squadra}
+                  {g.id_fanta_squadra ? ` · ${g.FantaSquadra}` : ""}
+                </p>
+              </div>
+              <div className="text-right hidden sm:block flex-shrink-0">
+                <p className={`text-xs font-bold ${getMvColor(g.mv)}`}>
+                  {g.mv.toFixed(2)}
+                </p>
+                <p className={`text-xs font-black ${getFmColor(g.fm)}`}>
+                  {g.fm.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-right w-12 flex-shrink-0">
+                <p className="text-sm font-black text-emerald-400">
+                  {g.costo_prev ?? "-"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onSeleziona(g)}
+                aria-label={`Aggiungi ${g.nome} alla rosa simulata`}
+                className="flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all flex-shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        })}
 
         {filtrati.length === 0 && (
           <div className="text-center text-gray-600 italic py-10 text-sm">

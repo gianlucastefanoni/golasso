@@ -1,8 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Header } from "../components/Header";
 import { getAllAste, Asta } from "../api/astaApi";
+import { getAllFasce } from "../api/fasceApi";
 import { getAllGiocatori } from "../api/giocatoriApi";
-import { StatisticheGiocatore, Ruolo } from "../types/GiocatoreTypes";
+import {
+  StatisticheGiocatore,
+  Ruolo,
+  FasciaRow,
+} from "../types/GiocatoreTypes";
 import { SelezioneAsta } from "../components/AstaLive/SelezioneAsta";
 import {
   RipartizioneBudget,
@@ -32,6 +37,7 @@ const DEFAULT_PERCENTUALI: RipartizionePercentuali = {
 
 export const SimulaRosa = () => {
   const [aste, setAste] = useState<Asta[]>([]);
+  const [fasce, setFasce] = useState<FasciaRow[]>([]);
   const [loadingAste, setLoadingAste] = useState(true);
   const [selectedAstaId, setSelectedAstaId] = useState<number | null>(null);
   const [giocatori, setGiocatori] = useState<StatisticheGiocatore[]>([]);
@@ -64,9 +70,10 @@ export const SimulaRosa = () => {
    * Caricamento aste
    */
   useEffect(() => {
-    getAllAste()
-      .then((asteList) => {
+    Promise.all([getAllAste(), getAllFasce()])
+      .then(([asteList, fasceList]) => {
         setAste(asteList);
+        setFasce(fasceList);
 
         if (asteList.length > 0) {
           setSelectedAstaId(asteList[0].id);
@@ -78,7 +85,7 @@ export const SimulaRosa = () => {
 
   const astaSelezionata = useMemo(
     () => aste.find((a) => a.id === selectedAstaId) ?? null,
-    [aste, selectedAstaId]
+    [aste, selectedAstaId],
   );
 
   /**
@@ -97,7 +104,7 @@ export const SimulaRosa = () => {
         const lista = await getAllGiocatori(astaSelezionata.stagione);
 
         const legatiAllAsta = lista.filter(
-          (g) => g.id_asta === astaSelezionata.id
+          (g) => g.id_asta === astaSelezionata.id,
         );
 
         const giocatoriAsta = legatiAllAsta.length > 0 ? legatiAllAsta : lista;
@@ -106,11 +113,11 @@ export const SimulaRosa = () => {
 
         const simulazione = await getSimulazioneRosa(
           String(astaSelezionata.id),
-          profileId
+          profileId,
         );
 
         setSelezionatiIds(
-          new Set(simulazione.map((x) => Number(x.id_giocatore)))
+          new Set(simulazione.map((x) => Number(x.id_giocatore))),
         );
       } catch (err) {
         console.error("Errore caricamento simulazione:", err);
@@ -125,12 +132,12 @@ export const SimulaRosa = () => {
 
   const giocatoriSelezionati = useMemo(
     () => giocatori.filter((g) => selezionatiIds.has(g.id)),
-    [giocatori, selezionatiIds]
+    [giocatori, selezionatiIds],
   );
 
   const giocatoriDisponibili = useMemo(
     () => giocatori.filter((g) => !selezionatiIds.has(g.id)),
-    [giocatori, selezionatiIds]
+    [giocatori, selezionatiIds],
   );
 
   const conteggiSelezionati = useMemo(() => {
@@ -172,7 +179,7 @@ export const SimulaRosa = () => {
       await aggiungiGiocatoreSimulazione(
         String(astaSelezionata.id),
         profileId,
-        String(g.id)
+        String(g.id),
       );
     } catch (err) {
       console.error("Errore salvataggio giocatore:", err);
@@ -202,7 +209,7 @@ export const SimulaRosa = () => {
       await rimuoviGiocatoreSimulazione(
         String(astaSelezionata.id),
         profileId,
-        String(g.id)
+        String(g.id),
       );
     } catch (err) {
       console.error("Errore rimozione giocatore:", err);
@@ -277,6 +284,7 @@ export const SimulaRosa = () => {
                   <GiocatoriDisponibili
                     giocatori={giocatoriDisponibili}
                     activeTab={activeTab}
+                    fasce={fasce}
                     onSeleziona={handleSeleziona}
                   />
                 </div>
