@@ -26,8 +26,8 @@ interface HomeFiltersState {
 const initialState = {
   search: "",
   minPv: 0,
-  minMv: 2,
-  minFm: 2,
+  minMv: 0,
+  minFm: 0,
   role: "TUTTI" as RoleType,
   selectedTeam: "TUTTE",
   showFuoriLista: false,

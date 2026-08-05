@@ -166,7 +166,7 @@ export const FiltriSidebar = ({
             <span className="text-emerald-500 font-mono font-bold text-xs bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">≥ {minMv.toFixed(1)}</span>
           </div>
           <input
-            type="range" min={2} max={10} step={0.1} value={minMv}
+            type="range" min={0} max={10} step={0.1} value={minMv}
             onChange={(e) => setMinMv(Number(e.target.value))}
             className="w-full h-1.5 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-emerald-500"
           />
@@ -179,7 +179,7 @@ export const FiltriSidebar = ({
             <span className="text-emerald-500 font-mono font-bold text-xs bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">≥ {minFm.toFixed(1)}</span>
           </div>
           <input
-            type="range" min={2} max={10} step={0.1} value={minFm}
+            type="range" min={0} max={10} step={0.1} value={minFm}
             onChange={(e) => setMinFm(Number(e.target.value))}
             className="w-full h-1.5 bg-gray-900 rounded-lg appearance-none cursor-pointer accent-emerald-500"
           />
