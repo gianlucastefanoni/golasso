@@ -679,7 +679,7 @@ export const ListaGiocatoriAsta = ({
                         {isValidNumber(adjustedPrev) ? adjustedPrev : "-"}
                       </td>
 
-                      <td className="py-2 px-2">
+                      <td className="py-2 px-2 whitespace-nowrap">
                         <input
                           type="number"
                           min={0}
