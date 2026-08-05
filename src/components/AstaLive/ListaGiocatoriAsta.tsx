@@ -692,6 +692,11 @@ export const ListaGiocatoriAsta = ({
                           disabled={isSaving}
                           className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-emerald-500 w-16 disabled:opacity-60"
                         />
+                        {prec?.costo ? (
+                          <span className="ml-1 text-[10px] text-gray-500">
+                            {prec.costo}
+                          </span>
+                        ) : null}
                       </td>
 
                       <td
