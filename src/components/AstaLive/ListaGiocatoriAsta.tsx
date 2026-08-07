@@ -50,6 +50,13 @@ const RUOLO_LABEL: Record<RuoloAsta, string> = {
 };
 const TOTALE_COLONNE = 20;
 
+const DIVISIONE_BUDGET = {
+  P: 5,
+  D: 11,
+  C: 18,
+  A: 61,
+};
+
 const isRuoloAsta = (ruolo: string): ruolo is RuoloAsta =>
   RUOLI_ASTA.includes(ruolo as RuoloAsta);
 
@@ -431,6 +438,16 @@ export const ListaGiocatoriAsta = ({
             className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 pl-10 outline-none focus:border-emerald-500 transition-all placeholder:text-gray-600"
           />
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
+        </div>
+        <div>
+          {effettivi
+            .filter((g) => g.r === activeTab)
+            .reduce((acc, g) => acc + (g.costo_prev ?? 0), 0) +
+            "/" +
+            (6000 * DIVISIONE_BUDGET[activeTab]) / 100 +
+            " valutati: " +
+            effettivi.filter((g) => g.r === activeTab && g.costo_prev !== null)
+              .length}
         </div>
         {stagionePrecedente !== null && (
           <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
